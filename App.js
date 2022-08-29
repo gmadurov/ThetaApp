@@ -17,18 +17,12 @@ import * as SplashScreen from "expo-splash-screen";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ApiContext from "./context/ApiContext";
-import HolderContext from "./context/HolderContext";
-import PurchaseContext from "./context/PurchaseContext";
-import ProductContext from "./context/ProductContext";
 import AuthStack from "./navigation/AuthStack";
 
 function Root() {
   const [isTryingLogin, setIsTryingLogin] = useState(true);
 
   const { user, refreshToken } = useContext(ApiContext);
-  const Holder = useContext(HolderContext);
-  const Purchase = useContext(PurchaseContext);
-  const Product = useContext(ProductContext);
 
   useLayoutEffect(() => {
     async function fetchToken() {
@@ -46,9 +40,6 @@ function Root() {
   useEffect(() => {
     async function fetchToken() {
       if (!isTryingLogin) {
-        await Purchase.GET();
-        await Product.GET();
-        await Holder.GET();
       }
     }
     fetchToken();

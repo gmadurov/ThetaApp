@@ -1,6 +1,6 @@
 import { createContext, useState } from "react";
 import { useContext } from "react";
-import ApiContext from "../context/ApiContext";
+import ApiContext from "./ApiContext";
 
 const LedenContext = createContext({
   leden: [{}],
