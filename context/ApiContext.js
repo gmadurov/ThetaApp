@@ -24,8 +24,12 @@ import { Alert } from "react-native";
  * use this to refresh tockens
  * */
 const ApiContext = createContext({
-  ApiRequest: async (url = "", config = {}) => {},
-  ApiFileRequest: async (url = "", config = {}) => {},
+  ApiRequest: async (url = "", config = {}) => {
+    return { res: [], data: [] };
+  },
+  ApiFileRequest: async (url = "", config = {}) => {
+    return { res: [], data: [] };
+  },
   refreshToken: async (authTokens = {}) => {},
   user: {
     token_type: "",
@@ -77,10 +81,16 @@ export const ApiProvider = ({ children }) => {
         .then((res) => res.json())
         .then((data) => setUser(() => data))
         .catch((err) => console.log(err));
+      setAuthTokens((tokens) => {
+        return {
+          refresh_token: tokens?.refresh_token,
+          access_token: data.access_token,
+        };
+      });
       // await AsyncStorage.setItem("user", JSON.stringify(data.access_token));
     } else {
       console.log(`Problem met de refresh token: ${res?.status}`);
-      // await logoutFunc();
+      await logoutFunc();
     }
   }
 
@@ -101,12 +111,13 @@ export const ApiProvider = ({ children }) => {
       console.log("isExpired 2");
     }
     config["headers"] = {
-      Authorization: `Bearer ${authTokens?.access_token}`,
+      Authorization: authTokens?.access_token,
     };
     if (!config["headers"]["Content-type"]) {
       config["headers"]["Content-type"] = "application/json";
     }
     if (user) {
+      // console.log(url, config);
       const [res, data] = await originalRequest(url, config);
       if (res?.status !== 200) {
         console.warn("request Failed", res?.status);
