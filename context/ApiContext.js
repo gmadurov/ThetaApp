@@ -60,24 +60,27 @@ export const ApiProvider = ({ children }) => {
 
   /** gets the refresh token and update the local state and local storage */
   async function refreshToken(authToken) {
-    const res = await fetch(`${baseUrl()}/api/users/token/refresh/`, {
+    const config = {
       /*  */ method: "POST",
-      headers: { Accept: "*/*", "Content-Type": "application/json" },
-      body: JSON.stringify({
-        refresh: authToken?.refresh,
-      }),
-    });
+      headers: {
+        Accept: "*/*",
+        "Content-Type": "application/json",
+        Authorization: authToken?.refresh_token,
+      },
+    };
+    const res = await fetch(`${baseUrl()}/login/refresh/`, config);
     let data = await res.json();
     if (res?.status === 200) {
-      setAuthTokens(() => data); // if cycling refresh tokens
-      setUser(
-        jwt_decode(data?.access) 
-      );
-      await AsyncStorage.setItem("authTokens", JSON.stringify(data)); // if cycling refresh tokens
-      await AsyncStorage.setItem("user", JSON.stringify(data.access));
+      fetch(`${baseUrl()}/users/me/`, {
+        headers: { Authorization: data.access_token },
+      })
+        .then((res) => res.json())
+        .then((data) => setUser(() => data))
+        .catch((err) => console.log(err));
+      // await AsyncStorage.setItem("user", JSON.stringify(data.access_token));
     } else {
       console.log(`Problem met de refresh token: ${res?.status}`);
-      await logoutFunc();
+      // await logoutFunc();
     }
   }
 
@@ -86,7 +89,7 @@ export const ApiProvider = ({ children }) => {
    * @returns \{ res, data \}*/
   const ApiRequest = async (url, config = {}) => {
     const isExpiredRefresh =
-      dayjs.unix(authTokens?.refresh?.exp).diff(dayjs(), "minute") < 1;
+      dayjs.unix(authTokens?.refresh_token?.exp).diff(dayjs(), "minute") < 1;
     const isExpired = dayjs.unix(user?.exp).diff(dayjs(), "minute") < 1;
     if (isExpiredRefresh) {
       Alert.alert("refresh token has expired, you were logged out");
@@ -98,7 +101,7 @@ export const ApiProvider = ({ children }) => {
       console.log("isExpired 2");
     }
     config["headers"] = {
-      Authorization: `Bearer ${authTokens?.access}`,
+      Authorization: `Bearer ${authTokens?.access_token}`,
     };
     if (!config["headers"]["Content-type"]) {
       config["headers"]["Content-type"] = "application/json";
@@ -128,7 +131,7 @@ export const ApiProvider = ({ children }) => {
       refreshToken(authTokens);
     }
     config["headers"] = {
-      Authorization: `Authentication ${authTokens?.access}`,
+      Authorization: `Authentication ${authTokens?.access_token}`,
     };
     if (user) {
       const [res, data] = await originalRequest(url, config);

@@ -21,6 +21,7 @@ function LoginScreen() {
       setIsAuthenticating(false);
     }
   }
+  
 
   if (isAuthenticating) {
     return (

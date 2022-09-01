@@ -45,7 +45,7 @@ const AuthContext = createContext({
     role: [],
     lid_id: 0,
   },
-  authTokens: { access: "", refresh: "" },
+  authTokens: { access_token: "", refresh_token: "" },
   start: async () => {},
 });
 
@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }) => {
   const navigation = useNavigation();
 
   async function loginFunc(username, password) {
-    let res = await fetch(`${baseUrl()}/api/login/`, {
+    let res = await fetch(`${baseUrl()}/login/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -73,12 +73,12 @@ export const AuthProvider = ({ children }) => {
     let data = await res.json();
     if (res?.status === 200) {
       setAuthTokens(() => data);
-      setUser(() => jwt_decode(data.access));
+      setUser(() => jwt_decode(data.access_token));
       await AsyncStorage.setItem("authTokens", JSON.stringify(data));
-      // await AsyncStorage.setItem("user", JSON.stringify(data.access));
+      // await AsyncStorage.setItem("user", JSON.stringify(data.access_token));
       // navigation.replace("ProductsPage");
     } else {
-      console.warn(`Error with ${data.detail}`);
+      console.warn(`Login Error with ${data.detail}`);
     }
   }
 

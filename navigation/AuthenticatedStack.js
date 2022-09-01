@@ -7,7 +7,7 @@ import DrawerNavigator from "./DrawerNavigator";
 
 const Stack = createNativeStackNavigator();
 
-export default function AuthenticationStack() {
+export default function AuthenticatedStack() {
   return (
     <Stack.Navigator
       screenOptions={{

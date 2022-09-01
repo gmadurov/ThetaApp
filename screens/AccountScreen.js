@@ -3,16 +3,12 @@ import { useContext, useLayoutEffect } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import AuthContext from "../context/AuthContext";
 import { GlobalStyles } from "../constants/styles";
-import HolderContext from "../context/HolderContext";
 import { useNavigation } from "@react-navigation/native";
 const AccountScreen = () => {
   const { user, authTokens } = useContext(AuthContext);
-  const { holders } = useContext(HolderContext);
   const navigation = useNavigation();
-  const holder = holders?.find((holder) => holder.id === user?.user_id);
-  console.log('hello');
   useLayoutEffect(() => {
-    navigation.setOptions({ title: "My Account €" + holder.stand });
+    navigation.setOptions({ title: "My Account €" });
   }, [navigation]);
   return (
     <View style={styles.container}>
@@ -25,8 +21,6 @@ const AccountScreen = () => {
           <Text>{role}</Text>
         ))}
       </Text>
-      <Text>Holder info</Text>
-      <Text>{holder.stand}</Text>
     </View>
   );
 };

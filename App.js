@@ -18,6 +18,7 @@ import * as SplashScreen from "expo-splash-screen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ApiContext from "./context/ApiContext";
 import AuthStack from "./navigation/AuthStack";
+import AuthenticatedStack from "./navigation/AuthenticatedStack";
 
 function Root() {
   const [isTryingLogin, setIsTryingLogin] = useState(true);
