@@ -97,6 +97,7 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
   async function refreshToken(authToken: AuthToken): Promise<boolean> {
     const controller = new AbortController();
     const { signal } = controller;
+    console.log({ authToken });
 
     const res = await fetch(`${baseUrl()}/login/refresh/`, {
       signal,
@@ -119,26 +120,27 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
         },
       });
       setAuthTokens({
-        ...authTokens,
+        refresh_token: authToken.refresh_token,
         user: user.data,
         access_token: data.access_token,
       }); // if cycling refresh tokens
       setAuthTokensDecoded({
-        ...authTokensDecoded,
+        refresh_token: jwtDecode(authToken.refresh_token),
         user: user.data,
-        access_token: jwtDecode(data.access_token as unknown as string),
+        access_token: jwtDecode(data.access_token as string),
       }); // if cycling refresh tokens
       setUser(user.data);
       await AsyncStorage.setItem(
         "authTokens",
         JSON.stringify({
-          ...authTokens,
+          refresh_token: authToken.refresh_token,
+          user: user.data,
           access_token: data.access_token,
-        })
+        } as AuthToken)
       ); // if cycling refresh tokens
       return true;
     } else {
-      // console.log(`Problem met de refresh token: ${res?.status}`);
+      console.log(`Problem met de refresh token: ${res?.status}`);
       showMessage({
         message: "Refresh token expired",
         description:
