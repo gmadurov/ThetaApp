@@ -11,7 +11,6 @@ import React, {
   useLayoutEffect,
   useState,
 } from "react";
-import { SafeAreaView, StyleSheet } from "react-native";
 import TokenInfo, { AuthToken, AuthToken_decoded } from "./models/AuthToken";
 
 import ApiContext from "./context/ApiContext";
@@ -23,12 +22,9 @@ import { GlobalStyles } from "./constants/styles";
 import LoginScreen from "./screens/LoginScreen";
 import { NavigationContainer } from "@react-navigation/native";
 import { Provider as PaperProvider } from "react-native-paper";
-import ProductScreen from "./screens/ProductScreen";
-import SettingsContext from "./context/SettingsContext";
+import { SafeAreaView } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { User } from "./models/Users";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import jwtDecode from "jwt-decode";
 import jwt_decode from "jwt-decode";
 
 const Stack = createNativeStackNavigator();
@@ -60,6 +56,7 @@ function AuthenticatedStack({ isTryingLogin }: { isTryingLogin: boolean }) {
     fetchToken();
     // eslint-disable-next-line
   }, [isTryingLogin]);
+  
   return (
     <>
       <Stack.Navigator

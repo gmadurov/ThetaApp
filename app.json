@@ -4,27 +4,26 @@
     "slug": "nativeapp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./src/assets/pwa-icons/manifest-icon-192.png",
+    "icon": "./src/assets/pwa-icons/manifest-icon-512.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./src/assets/favicon.png",
+      "image": "./src/assets/pwa-icons/manifest-icon-512.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./src/assets/pwa-icons/manifest-icon-192.png",
+        "foregroundImage": "./src/assets/pwa-icons/manifest-icon-512.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "permissions": ["WRITE_CONTACTS"]
     },
     "web": {
       "favicon": "./src/assets/favicon.png"

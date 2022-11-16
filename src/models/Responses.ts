@@ -9,3 +9,9 @@ export interface FailedMessage {
   token_type: string;
   message: string;
 }
+
+export interface SuccessResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+}
