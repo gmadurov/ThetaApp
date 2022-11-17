@@ -1,4 +1,4 @@
-import * as Contacts from "expo-contacts";
+import * as Contacts from 'expo-contacts';
 
 import {
   Avatar,
@@ -6,16 +6,16 @@ import {
   Menu,
   Searchbar,
   TouchableRipple,
-} from "react-native-paper";
-import { FlatList, Linking, StyleSheet, Text, View } from "react-native";
-import { Member, MemberRespose } from "../models/Members";
-import React, { useCallback, useContext, useEffect } from "react";
+} from 'react-native-paper';
+import { FlatList, Linking, StyleSheet, Text, View } from 'react-native';
+import { Member, MemberRespose } from '../models/Members';
+import React, { useCallback, useContext, useEffect } from 'react';
 
-import ApiContext from "../context/ApiContext";
-import IconButton from "../components/ui/IconButton";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { showMessage } from "react-native-flash-message";
-import { useState } from "react";
+import ApiContext from '../context/ApiContext';
+import IconButton from '../components/ui/IconButton';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { showMessage } from 'react-native-flash-message';
+import { useState } from 'react';
 
 type MenuVisibility = {
   [key: string]: boolean | undefined;
@@ -23,21 +23,21 @@ type MenuVisibility = {
 const LedenlijstScreen = () => {
   const { ApiRequest, user } = useContext(ApiContext);
   const [members, setMembers] = useState<Member[]>([] as Member[]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [next, setNext] = useState<string | undefined>(undefined);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [previous, setPrevious] = useState<string | undefined>(undefined);
   const [page, setPage] = useState<string | undefined>();
-  const [ordering, setOrdering] = useState<string>("achternaam");
+  const [ordering, setOrdering] = useState<string>('achternaam');
   const getMembers = async () => {
     setRefreshing(true);
     const { res, data } = await ApiRequest<MemberRespose>(
-      `/members/${page || searchQuery || ordering ? "?" : ""}${
-        page ? "page=" + page : ""
-      }${page && searchQuery ? "&" : ""}${
-        searchQuery ? "searchstring=" + searchQuery : ""
-      }${ordering && (searchQuery || page) ? "&" : ""}${
-        ordering ? "ordering=" + ordering : ""
+      `/members/${page || searchQuery || ordering ? '?' : ''}${
+        page ? 'page=' + page : ''
+      }${page && searchQuery ? '&' : ''}${
+        searchQuery ? 'searchstring=' + searchQuery : ''
+      }${ordering && (searchQuery || page) ? '&' : ''}${
+        ordering ? 'ordering=' + ordering : ''
       }`
     );
 
@@ -45,38 +45,23 @@ const LedenlijstScreen = () => {
     setNext(() =>
       data.next
         ? data?.next
-            .split("/v2/members/?")[1]
-            .split("&")
-            .filter((x) => x.includes("page="))[0]
-            .split("=")[1]
+            .split('/v2/members/?')[1]
+            .split('&')
+            .filter((x) => x.includes('page='))[0]
+            .split('=')[1]
         : undefined
     );
     setPrevious(() =>
       parseInt(next as string) > 2
         ? (data?.previous
-            ?.split("/v2/members/?")[1]
-            .split("&")
-            .filter((x) => x.includes("page="))[0]
-            .split("=")[1] as string)
+            ?.split('/v2/members/?')[1]
+            .split('&')
+            .filter((x) => x.includes('page='))[0]
+            .split('=')[1] as string)
         : undefined
     );
     setRefreshing(false);
   };
-  useEffect(() => {
-    (async () => {
-      const { status } = await Contacts.requestPermissionsAsync();
-      // console.log(status);
-      if (status === "granted") {
-        const { data } = await Contacts.getContactsAsync({
-          fields: [Contacts.Fields.Emails],
-        });
-        if (data.length > 0) {
-          const contact = data[0];
-          // console.log(contact);
-        }
-      }
-    })();
-  }, []);
   useEffect(() => {
     if (user?.id) {
       getMembers();
@@ -124,42 +109,76 @@ const LedenlijstScreen = () => {
     const downloadContact = async () => {
       if (await Contacts.isAvailableAsync()) {
         const contact = {
-          id: "",
           name: item.voornaam,
           contactType: Contacts.ContactTypes.Person,
           [Contacts.Fields.FirstName]: item.voornaam,
           [Contacts.Fields.LastName]: item.achternaam,
-          [Contacts.Fields.Company]: "E.S.R Thêta",
+          [Contacts.Fields.MiddleName]: item.voorletters,
+          [Contacts.Fields.Company]: 'E.S.R Theta',
           [Contacts.Fields.PhoneNumbers]: item.telefoonnummer
             ? [
                 {
                   number: item.telefoonnummer,
                   isPrimary: true,
-                  digits: "1234567890",
-                  countryCode: "PA",
-                  label: "main",
+                  digits: '1234567890',
+                  countryCode: 'PA',
+                  label: 'main',
                 },
               ]
             : [undefined],
           [Contacts.Fields.Emails]: item.emailadres
             ? [{ email: item.emailadres }]
             : undefined,
-          [Contacts.Fields.Image]: item.foto ? { uri: item.foto } : undefined,
-          [Contacts.Fields.Department]: item.opleiding,
         };
 
         const permissions = await Contacts.requestPermissionsAsync();
-
-        if (permissions.status === "granted") {
-          await Contacts.addContactAsync(
-            contact as unknown as Contacts.Contact
-          );
-          showMessage({
-            message: "Contact toegevoegd",
-            description: `${item.voornaam} ${item.achternaam} is toegevoegd aan je contacten`,
-            type: "success",
-            icon: "success",
+        if (permissions.status === 'granted') {
+          let groupID;
+          const data1 = await Contacts.getGroupsAsync({
+            groupName: 'E.S.R Theta',
           });
+          if (data1.length < 1) {
+            groupID = await Contacts.createGroupAsync('E.S.R Theta');
+          } else {
+            groupID = data1[0].id as string;
+          }
+          const contact_withSameName = await Contacts.getContactsAsync({
+              name: `${item.voornaam} ${item.voorletters} ${item.achternaam}`,
+            })
+          if (
+            !contact_withSameName.data.some(
+              (mem) => mem.name === `${item.voornaam} ${item.voorletters} ${item.achternaam}`
+            )
+          ) {
+            const contactID = await Contacts.addContactAsync(
+              contact as unknown as Contacts.Contact
+            );
+            await Contacts.addExistingContactToGroupAsync(contactID, groupID);
+            await Contacts.presentFormAsync(
+              contactID,
+              contact as unknown as Contacts.Contact
+            );
+            showMessage({
+              message: 'Contact toegevoegd',
+              description: `${item.voornaam} ${item.achternaam} is toegevoegd aan je contacten`,
+              type: 'success',
+              icon: 'success',
+            });
+          } else {
+            const contactID = contact_withSameName.data[0].id
+            console.log('idd 185;', contactID);
+            await Contacts.addExistingContactToGroupAsync(contactID, groupID);
+            await Contacts.presentFormAsync(
+              contactID,
+              contact as unknown as Contacts.Contact
+            );
+            showMessage({
+              message: 'Contact zit al in je contacten lijst',
+              description: `${item.voornaam} ${item.voorletters} ${item.achternaam}`,
+              type: 'warning',
+              icon: 'warning',
+            });
+          }
         }
         // console.log(await Contacts.addContactAsync(contact));
       }
@@ -180,8 +199,7 @@ const LedenlijstScreen = () => {
             <Text
               style={[styles.header]}
               ellipsizeMode="tail"
-              numberOfLines={1}
-            >
+              numberOfLines={1}>
               {item.voornaam} {item.achternaam}
             </Text>
           </View>
@@ -193,44 +211,42 @@ const LedenlijstScreen = () => {
               <Text numberOfLines={1} ellipsizeMode="tail">
                 {item.ploeglidmaatschappen
                   .map((ploeg) => ploeg.ploeg.naam)
-                  .join(", ")}
+                  .join(', ')}
               </Text>
             </View>
             <Menu
-              visible={_getVisible("member" + item.id)}
-              onDismiss={() => _toggleMenu("member" + item.id)}
+              visible={_getVisible('member' + item.id)}
+              onDismiss={() => _toggleMenu('member' + item.id)}
               anchor={
                 <TouchableRipple
                   onPress={() => {
-                    _toggleMenu("member" + item.id);
-                  }}
-                >
+                    _toggleMenu('member' + item.id);
+                  }}>
                   <Ionicons
-                    name={"ellipsis-vertical-circle-outline"}
-                    color={"blue"}
+                    name={'ellipsis-vertical-circle-outline'}
+                    color={'blue'}
                     size={24}
-                    onPressFunction={() => _toggleMenu("member" + item.id)}
+                    onPressFunction={() => _toggleMenu('member' + item.id)}
                     style={styles.icon}
                   />
                 </TouchableRipple>
-              }
-            >
+              }>
               <Menu.Item
                 onPress={() => Linking.openURL(`tel:${item.telefoonnummer}`)}
-                title={"Bellen"}
-                icon={"phone-outline"}
+                title={'Bellen'}
+                icon={'phone-outline'}
               />
               <Menu.Item
                 onPress={() =>
                   Linking.openURL(`https://wa.me/${item.telefoonnummer}`)
                 }
-                title={"Whatsappen"}
-                icon={"whatsapp"}
+                title={'Whatsappen'}
+                icon={'whatsapp'}
               />
               <Menu.Item
                 onPress={downloadContact}
-                icon={"account-box-multiple-outline"}
-                title={"Contact Toevoegen"}
+                icon={'account-box-multiple-outline'}
+                title={'Contact Toevoegen'}
               />
             </Menu>
           </View>
@@ -241,28 +257,27 @@ const LedenlijstScreen = () => {
   return (
     <>
       <Menu
-        visible={_getVisible("search")}
-        onDismiss={() => _toggleMenu("search")}
+        visible={_getVisible('search')}
+        onDismiss={() => _toggleMenu('search')}
         anchor={
           <Searchbar
             placeholder="Search Leden"
             onChangeText={(query: string) => setSearchQuery(query)}
-            onIconPress={() => _toggleMenu("search")}
+            onIconPress={() => _toggleMenu('search')}
             value={searchQuery}
             style={styles.searchbar}
           />
-        }
-      >
+        }>
         <Menu.Item
           onPress={async () => {
-            setOrdering((nu) => (nu === "voornaam" ? "-voornaam" : "voornaam"));
+            setOrdering((nu) => (nu === 'voornaam' ? '-voornaam' : 'voornaam'));
           }}
           title="Order op voornaam"
         />
         <Menu.Item
           onPress={async () => {
             setOrdering((nu) =>
-              nu === "achternaam" ? "-achternaam" : "achternaam"
+              nu === 'achternaam' ? '-achternaam' : 'achternaam'
             );
           }}
           title="Order op achternaam"
@@ -270,7 +285,7 @@ const LedenlijstScreen = () => {
         <Menu.Item
           onPress={async () => {
             setOrdering((nu) =>
-              nu === "geboortedatum" ? "-geboortedatum" : "geboortedatum"
+              nu === 'geboortedatum' ? '-geboortedatum' : 'geboortedatum'
             );
           }}
           title="Order op gebortedatum"
@@ -282,7 +297,6 @@ const LedenlijstScreen = () => {
         keyExtractor={(item) => item.id.toString()}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
-        style={[styles.flex]}
         contentContainerStyle={styles.container}
         refreshing={refreshing}
         onRefresh={async () => {
@@ -293,22 +307,28 @@ const LedenlijstScreen = () => {
         // onEndReached={getMembers}
         // onEndReachedThreshold={0.2}
         ListHeaderComponent={
-          <Button
-            onPress={() => {
-              setPage(() => previous);
-            }}
-            disabled={previous === undefined}
-          >
-            Previous
-          </Button>
+          <>
+            {previous !== undefined && (
+              <Button
+                onPress={() => {
+                  setPage(() => previous);
+                }}
+                disabled={previous === undefined}>
+                Previous
+              </Button>
+            )}
+          </>
         }
         ListFooterComponent={
-          <Button
-            onPress={() => setPage(() => next)}
-            disabled={next === undefined}
-          >
-            next
-          </Button>
+          <>
+            {next !== undefined && (
+              <Button
+                onPress={() => setPage(() => next)}
+                disabled={next === undefined}>
+                next
+              </Button>
+            )}
+          </>
         }
       />
     </>
@@ -331,28 +351,28 @@ const styles = StyleSheet.create({
   },
   itemContainer: {
     marginBottom: 16,
-    flexDirection: "row",
+    flexDirection: 'row',
   },
   itemTextContentContainer: {
-    flexDirection: "column",
+    flexDirection: 'column',
     flex: 1,
     marginLeft: 16,
   },
   itemHeaderContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   itemMessageContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     flexGrow: 1,
   },
   read: {
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   icon: {
     marginLeft: 16,
-    alignSelf: "flex-end",
+    alignSelf: 'flex-end',
   },
   date: {
     fontSize: 12,
