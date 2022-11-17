@@ -7,12 +7,14 @@ import {
 import React, { useContext } from "react";
 
 import AuthContext from "../context/AuthContext";
+import ChatScreen from "../screens/ChatScreen";
 import { Divider } from "react-native-paper";
 import FullContext from "../context/FullContext";
 import LedenlijstScreen from "../screens/LedenlijstScreen";
 import LinkCardScreen from "../screens/LinkCardScreen";
 import LoginScreen from "../screens/LoginScreen";
 import NFCContext from "../context/NFCContext";
+import NewsPage from "../screens/NewsPage";
 import WalletUpgrateScreen from "../screens/WalletUpgrateScreen";
 
 const Drawer = createDrawerNavigator();
@@ -27,6 +29,7 @@ const DrawerNavigator = () => {
       drawerContent={(props: any) => {
         return (
           <DrawerContentScrollView {...props}>
+            <DrawerItemList {...props} />
             <DrawerItem
               label="Uitlogen"
               onPress={async () => await logoutFunc()}
@@ -36,10 +39,34 @@ const DrawerNavigator = () => {
       }}
     >
       <Drawer.Screen
+        name="News"
+        component={NewsPage}
+        options={{
+          title: "News Pagina",
+          // backgroundColor: GlobalStyles.colors.primary1,
+        }}
+      />
+      <Drawer.Screen
+        name="FrustSchrift"
+        children={() => <ChatScreen frust={true} />}
+        options={{
+          title: "Frustschrift",
+          // backgroundColor: GlobalStyles.colors.primary1,
+        }}
+      />
+      <Drawer.Screen
+        name="SpamSchrift"
+        children={() => <ChatScreen spam={true} />}
+        options={{
+          title: "Spamschrift",
+          // backgroundColor: GlobalStyles.colors.primary1,
+        }}
+      />
+      <Drawer.Screen
         name="LedenlijstScreen"
         component={LedenlijstScreen}
         options={{
-          title: "Leden lijst ",
+          title: "Ledenlijst ",
           // backgroundColor: GlobalStyles.colors.primary1,
         }}
       />

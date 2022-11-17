@@ -82,7 +82,7 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
     config: object
   ): Promise<{ res: Response; data: TResponse }> {
     let urlFetch = `${baseUrl()}${url}`;
-    console.log(urlFetch, config);
+    // console.log(urlFetch, config);
     const res = await fetch(urlFetch, config);
     const data = await res.json();
     // console.log("originalRequest", data, res?.status);
