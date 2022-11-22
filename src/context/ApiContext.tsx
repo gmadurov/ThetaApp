@@ -47,6 +47,7 @@ export type ApiContextType = {
     }
   ): Promise<{ res: Response; data: TResponse }>;
   refreshToken: (authTokens: AuthToken) => Promise<AuthToken>;
+  baseUrl: string;
 };
 
 const ApiContext = createContext<ApiContextType>({} as ApiContextType);
@@ -63,6 +64,8 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
     logoutFunc,
     authTokensDecoded,
     setAuthTokensDecoded,
+    originalRequest,
+    baseUrl,
   } = useContext(AuthContext);
 
   async function returnAccessToken() {
@@ -72,36 +75,8 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
     let tokens = (await JSON.parse(
       (await AsyncStorage.getItem("authTokens")) as string
     )) as AuthToken;
-    
+
     return tokens?.access_token;
-  }
-
-  /** makes the original request called but with the Bearer set and to the correct location */
-  async function originalRequest<TResponse>(
-    url: string,
-    config: object
-  ): Promise<{ res: Response; data: TResponse }> {
-    let urlFetch = `${baseUrl()}${url}`;
-    // console.log(urlFetch, config);
-    const res = await fetch(urlFetch, config);
-    const data = await res.json();
-    // console.log("originalRequest", data, res?.status);
-    if (res?.status === 401) {
-      await logoutFunc();
-    } else if (res?.status !== 200) {
-      // Alert.alert(`Error ${res?.status} fetching ${url}`);
-      showMessage({
-        message: `Error ${res?.status}`,
-        description: `fetching ${url}`,
-        type: "danger",
-        floating: true,
-        hideStatusBar: true,
-        autoHide: true,
-        duration: 1500,
-      });
-    }
-
-    return { res, data } as { res: Response; data: TResponse };
   }
 
   /** gets the refresh token and update the local state and local storage */
@@ -111,7 +86,7 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
         (await AsyncStorage.getItem("authTokens")) as string
       )) as AuthToken;
     }
-
+    
     const { res, data } = await originalRequest<FailedRequest>(
       `/login/refresh/`,
       {
@@ -123,7 +98,6 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
         },
       }
     );
-
     if (res?.status === 200) {
       const user = await ApiRequest<User>("/users/me/", {
         headers: {
@@ -224,7 +198,6 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
       };
     }
     if (["", undefined].includes(config.headers.Authorization)) {
-
       config.headers = {
         ...config.headers,
         Authorization: await returnAccessToken(),
@@ -298,6 +271,7 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
     ApiRequest: ApiRequest,
     ApiFileRequest: ApiFileRequest,
     refreshToken: refreshToken,
+    baseUrl,
   };
   return (
     <ApiContext.Provider value={value_dic}>{children}</ApiContext.Provider>
