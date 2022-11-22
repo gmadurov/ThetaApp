@@ -26,10 +26,21 @@ import { SafeAreaView } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import jwt_decode from "jwt-decode";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import TabNavigator from "./navigation/TabNavigator";
+import ProfileScreen from "./screens/ProfileScreen";
+import AuthenticatedStack from "./navigation/AuthenticatedStack";
 
-const Stack = createNativeStackNavigator();
+export type AppParamsList = {
+  Login: undefined;
+  Drawer: undefined;
+  Tab: undefined;
+  AuthenticatedStack: undefined;
+};
 
-function AuthStack() {
+const Stack = createNativeStackNavigator<AppParamsList>();
+
+function AuthRoutes() {
   return (
     <Stack.Navigator
       screenOptions={{
@@ -44,7 +55,7 @@ function AuthStack() {
   );
 }
 
-function AuthenticatedStack({ isTryingLogin }: { isTryingLogin: boolean }) {
+function AuthenticatedRoutes({ isTryingLogin }: { isTryingLogin: boolean }) {
   // const Settings = useContext(SettingsContext);
   useEffect(() => {
     async function fetchToken() {
@@ -56,7 +67,7 @@ function AuthenticatedStack({ isTryingLogin }: { isTryingLogin: boolean }) {
     fetchToken();
     // eslint-disable-next-line
   }, [isTryingLogin]);
-  
+
   return (
     <>
       <Stack.Navigator
@@ -69,6 +80,20 @@ function AuthenticatedStack({ isTryingLogin }: { isTryingLogin: boolean }) {
         <Stack.Screen
           name="Drawer"
           component={DrawerNavigator}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="AuthenticatedStack"
+          component={AuthenticatedStack}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="Tab"
+          component={TabNavigator}
           options={{
             headerShown: false,
           }}
@@ -146,9 +171,9 @@ function Navigation({
   return (
     <>
       {!user?.id ? (
-        <AuthStack />
+        <AuthRoutes />
       ) : (
-        <AuthenticatedStack isTryingLogin={isTryingLogin} />
+        <AuthenticatedRoutes isTryingLogin={isTryingLogin} />
       )}
     </>
   );
