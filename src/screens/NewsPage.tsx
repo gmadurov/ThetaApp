@@ -2,6 +2,7 @@ import {
   Avatar,
   Button,
   Card,
+  Chip,
   Menu,
   Searchbar,
   TouchableRipple,
@@ -11,9 +12,16 @@ import { NewsArticle, NewsResponse } from "../models/News";
 import React, { useContext, useEffect, useState } from "react";
 
 import ApiContext from "../context/ApiContext";
+import { Ionicons } from "@expo/vector-icons";
+import PdfScreen from "./PdfScreen";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { DrawerParamList } from "../navigation/DrawerNavigator";
+import RenderMarkdown from "../components/RenderMarkdown";
 
-const NewsPage = () => {
-  const { ApiRequest, user , baseUrl} = useContext(ApiContext);
+type Props = NativeStackScreenProps<DrawerParamList, "NewsPage">;
+
+const NewsPage = ({ route, navigation }: Props) => {
+  const { ApiRequest, user, baseUrl } = useContext(ApiContext);
   const [newsArticles, setNewsArticles] = useState<NewsArticle[]>(
     [] as NewsArticle[]
   );
@@ -60,7 +68,7 @@ const NewsPage = () => {
     };
   }, [user?.id, page, ordering]);
   const [lines, setLines] = useState({} as { [key: string]: number });
-
+  
   const renderItem = ({ item }: { item: NewsArticle }) => {
     return (
       <>
@@ -68,20 +76,45 @@ const NewsPage = () => {
           style={styles.card}
           mode={"elevated"}
           onPress={() =>
-            setLines({ ...lines, [item.id]: lines[item.id] !== 4 ? 200 : 4 })
+            setLines({ ...lines, [item.id]: lines[item.id] !== 200 ? 200 : 4 })
           }
         >
-          <Card.Cover
-            source={{
-              uri: (baseUrl.slice(0, -3) + item.photo_url) as string,
-            }}
-          />
+          {item.photo_url && (
+            <Card.Cover
+              source={{
+                uri: (baseUrl.slice(0, -3) + item.photo_url) as string,
+              }}
+            />
+          )}
           <Card.Title title={item.title} subtitle={item.subtitle} />
           <Card.Content>
             <Text ellipsizeMode="tail" numberOfLines={lines[item.id] || 4}>
-              {item.content}
+              <RenderMarkdown>{item.content}</RenderMarkdown>
             </Text>
           </Card.Content>
+          {item.attachment_url && (
+            <Card.Actions
+              style={{
+                justifyContent: "flex-end",
+              }}
+            >
+              <Chip
+                avatar={<Ionicons name={"document-attach"} size={20} />}
+                onPress={() => {
+                  navigation.navigate("AuthenticatedStack", {
+                    screen: "PdfScreen",
+                    params: {
+                      uri: baseUrl.slice(0, -3) + item.attachment_url,
+                      type: item.attachment_file_type,
+                    },
+                  });
+                }}
+                // style={styles.chip}
+              >
+                Bijlage
+              </Chip>
+            </Card.Actions>
+          )}
         </Card>
       </>
     );
@@ -138,5 +171,6 @@ const styles = StyleSheet.create({
   container: {},
   card: {
     margin: 4,
+    paddingBottom: 9,
   },
 });
