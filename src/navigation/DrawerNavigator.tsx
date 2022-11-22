@@ -7,29 +7,46 @@ import {
 import React, { useContext } from "react";
 
 import AuthContext from "../context/AuthContext";
-import ChatScreen from "../screens/ChatScreen";
-import { Divider } from "react-native-paper";
-import FullContext from "../context/FullContext";
 import LedenlijstScreen from "../screens/LedenlijstScreen";
-import LinkCardScreen from "../screens/LinkCardScreen";
-import LoginScreen from "../screens/LoginScreen";
-import NFCContext from "../context/NFCContext";
+import ChatNavigator from "./ChatNavigator";
 import NewsPage from "../screens/NewsPage";
 import WalletUpgrateScreen from "../screens/WalletUpgrateScreen";
+import { AuthenticatedStackParamsList } from "./AuthenticatedStack";
+import { useNavigation } from "@react-navigation/native";
 
-const Drawer = createDrawerNavigator();
+export type DrawerParamList = {
+  Chat: undefined;
+  LoginScreen: undefined;
+  NewsPage: undefined;
+  WalletUpgrateScreen: undefined;
+  LedenlijstScreen: undefined;
+  [key: string]: undefined | object;
+};
+
+const Drawer = createDrawerNavigator<DrawerParamList>();
 
 /** the list of screens that will be reachable via the drawer( the menu you can open to the left of the screen) */
 const DrawerNavigator = () => {
   const { user, logoutFunc } = useContext(AuthContext);
-
+  const navigation = useNavigation();
   return (
     <Drawer.Navigator
+      initialRouteName="NewsPage"
+      id="DrawerStack"
       // screenOptions={{  headerStyle: { backgroundColor: "#351401" },//   headerTintColor: "white",//   sceneContainerStyle: { backgroundColor: "#3f2f25" },//   drawerContentStyle: { backgroundColor: "#351401" },//   drawerInactiveTintColor: "white",//   drawerActiveTintColor: "#351401",    //   drawerActiveBackgroundColor: "#e4baa1",// }}
       drawerContent={(props: any) => {
         return (
           <DrawerContentScrollView {...props}>
             <DrawerItemList {...props} />
+            <DrawerItem
+              label="My profile"
+              onPress={() =>
+                navigation.navigate("AuthenticatedStack", {
+                  screen: "ProfilePagina",
+                  params: { id: user?.id },
+                })
+              }
+            />
             <DrawerItem
               label="Uitlogen"
               onPress={async () => await logoutFunc()}
@@ -39,7 +56,7 @@ const DrawerNavigator = () => {
       }}
     >
       <Drawer.Screen
-        name="News"
+        name="NewsPage"
         component={NewsPage}
         options={{
           title: "News Pagina",
@@ -47,19 +64,10 @@ const DrawerNavigator = () => {
         }}
       />
       <Drawer.Screen
-        name="FrustSchrift"
-        children={() => <ChatScreen frust={true} />}
+        name="Chat"
+        component={ChatNavigator}
         options={{
-          title: "Frustschrift",
-          // backgroundColor: GlobalStyles.colors.primary1,
-        }}
-      />
-      <Drawer.Screen
-        name="SpamSchrift"
-        children={() => <ChatScreen spam={true} />}
-        options={{
-          title: "Spamschrift",
-          // backgroundColor: GlobalStyles.colors.primary1,
+          headerShown: false,
         }}
       />
       <Drawer.Screen
