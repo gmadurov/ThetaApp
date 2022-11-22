@@ -6,11 +6,21 @@ import React, { useContext, useEffect, useState } from "react";
 import ApiContext from "../context/ApiContext";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import RenderMarkdown from "../components/RenderMarkdown";
-import { baseUrl } from "../context/AuthContext";
 import dayjs from "dayjs";
+import { ChatParamList } from "../navigation/ChatNavigator";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
-const ChatScreen = ({ frust, spam }: { frust?: boolean; spam?: boolean }) => {
-  const { ApiRequest, user } = useContext(ApiContext);
+type Props = NativeStackScreenProps<
+  ChatParamList,
+  "FrustSchrift" | "SpamSchrift"
+>;
+
+const ChatScreen = ({ route, navigation }: Props) => {
+  const [frust, spam] = [
+    route.name === "FrustSchrift",
+    route.name === "SpamSchrift",
+  ];
+  const { ApiRequest, user, baseUrl } = useContext(ApiContext);
 
   const [chats, setChats] = useState<ChatItem[]>([] as ChatItem[]);
   const [next, setNext] = useState<string | undefined>(undefined);
@@ -25,7 +35,7 @@ const ChatScreen = ({ frust, spam }: { frust?: boolean; spam?: boolean }) => {
     if (n === 1) {
       return ["add-outline"];
     } else if (n > 1 && n < 50) {
-      return ["#"];
+      return ["code-slash-outline"];
     } else if (n >= 50 && n < 125) {
       return ["star-half"];
     } else if (n >= 125 && n < 1000) {
@@ -78,7 +88,7 @@ const ChatScreen = ({ frust, spam }: { frust?: boolean; spam?: boolean }) => {
       }${page ? "page=" + page : ""}
       ${ordering && page ? "&" : ""}${ordering ? "order_by=" + ordering : ""}`
     );
-    console.log(data.results);
+    // console.log(data.results);
 
     setChats(() => data.results);
     setNext(() =>
@@ -121,7 +131,7 @@ const ChatScreen = ({ frust, spam }: { frust?: boolean; spam?: boolean }) => {
       <View style={styles.itemContainer}>
         {item?.author.photo_url !== null ? (
           <Avatar.Image
-            source={{ uri: baseUrl().slice(0, -3) + item?.author.photo_url }}
+            source={{ uri: baseUrl.slice(0, -3) + item?.author.photo_url }}
             size={avatarSize}
           />
         ) : (
@@ -133,6 +143,12 @@ const ChatScreen = ({ frust, spam }: { frust?: boolean; spam?: boolean }) => {
               style={[styles.header]}
               ellipsizeMode="tail"
               numberOfLines={2}
+              onPress={() => {
+                navigation.navigate("AuthenticatedStack", {
+                  screen: "ProfilePagina",
+                  params: { id: item?.id },
+                });
+              }}
             >
               {item.author.name}
               <Text
@@ -143,6 +159,7 @@ const ChatScreen = ({ frust, spam }: { frust?: boolean; spam?: boolean }) => {
                   fontWeight: "normal",
                 }}
               >
+                {" "}
                 | {dayjs(item.pub_date).format("D-M-YYYY | hh:mmA")}
               </Text>
             </Text>
@@ -150,15 +167,16 @@ const ChatScreen = ({ frust, spam }: { frust?: boolean; spam?: boolean }) => {
             <Text style={[styles.date]}>
               {frust
                 ? getSigns(item.author.frust_count).map((x, i) =>
-                    x !== "#" ? (
+                    x !== "code-slash-outline" ? (
                       <Ionicons
-                        key={"spamTrophy" + i + item.id}
+                        key={`spamTrophy: ${i} ${item.id} ${x}`}
+                        // @ts-ignore
                         name={x}
                         size={styles.date.fontSize}
                       />
                     ) : (
                       <Text
-                        key={"spamTrophy" + i + item.id}
+                        key={`spamHash: ${i} ${item.id} ${x}`}
                         style={styles.date}
                       >
                         #
@@ -166,15 +184,16 @@ const ChatScreen = ({ frust, spam }: { frust?: boolean; spam?: boolean }) => {
                     )
                   )
                 : getSigns(item.author.spam_count).map((x, i) =>
-                    x !== "#" ? (
+                    x !== "code-slash-outline" ? (
                       <Ionicons
-                        key={"spamTrophy" + i + item.id}
+                        key={`spamTrophy: ${i} ${item.id} ${x}`}
+                        // @ts-ignore
                         name={x}
                         size={styles.date.fontSize}
                       />
                     ) : (
                       <Text
-                        key={"spamTrophy" + i + item.id}
+                        key={`spamHash: ${i} ${item.id} ${x}`}
                         style={styles.date}
                       >
                         #
@@ -198,7 +217,7 @@ const ChatScreen = ({ frust, spam }: { frust?: boolean; spam?: boolean }) => {
       <FlatList
         data={chats}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => `chatItem: ${item.id.toString()}`}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.container}

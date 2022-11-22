@@ -1,4 +1,4 @@
-import * as Contacts from 'expo-contacts';
+import * as Contacts from "expo-contacts";
 
 import {
   Avatar,
@@ -6,70 +6,24 @@ import {
   Menu,
   Searchbar,
   TouchableRipple,
-} from 'react-native-paper';
-import { FlatList, Linking, StyleSheet, Text, View } from 'react-native';
-import { Member, MemberRespose } from '../models/Members';
-import React, { useCallback, useContext, useEffect } from 'react';
+} from "react-native-paper";
+import { FlatList, Linking, StyleSheet, Text, View } from "react-native";
+import { Member, MemberRespose } from "../models/Members";
+import React, { useCallback, useContext, useEffect } from "react";
 
-import ApiContext from '../context/ApiContext';
-import IconButton from '../components/ui/IconButton';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { showMessage } from 'react-native-flash-message';
-import { useState } from 'react';
+import ApiContext from "../context/ApiContext";
+import IconButton from "../components/ui/IconButton";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { showMessage } from "react-native-flash-message";
+import { useState } from "react";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { DrawerParamList } from "../navigation/DrawerNavigator";
 
 type MenuVisibility = {
   [key: string]: boolean | undefined;
 };
-const LedenlijstScreen = () => {
-  const { ApiRequest, user } = useContext(ApiContext);
-  const [members, setMembers] = useState<Member[]>([] as Member[]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [next, setNext] = useState<string | undefined>(undefined);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [previous, setPrevious] = useState<string | undefined>(undefined);
-  const [page, setPage] = useState<string | undefined>();
-  const [ordering, setOrdering] = useState<string>('achternaam');
-  const getMembers = async () => {
-    setRefreshing(true);
-    const { res, data } = await ApiRequest<MemberRespose>(
-      `/members/${page || searchQuery || ordering ? '?' : ''}${
-        page ? 'page=' + page : ''
-      }${page && searchQuery ? '&' : ''}${
-        searchQuery ? 'searchstring=' + searchQuery : ''
-      }${ordering && (searchQuery || page) ? '&' : ''}${
-        ordering ? 'ordering=' + ordering : ''
-      }`
-    );
-
-    setMembers(() => data.results);
-    setNext(() =>
-      data.next
-        ? data?.next
-            .split('/v2/members/?')[1]
-            .split('&')
-            .filter((x) => x.includes('page='))[0]
-            .split('=')[1]
-        : undefined
-    );
-    setPrevious(() =>
-      parseInt(next as string) > 2
-        ? (data?.previous
-            ?.split('/v2/members/?')[1]
-            .split('&')
-            .filter((x) => x.includes('page='))[0]
-            .split('=')[1] as string)
-        : undefined
-    );
-    setRefreshing(false);
-  };
-  useEffect(() => {
-    if (user?.id) {
-      getMembers();
-    }
-    return () => {
-      setMembers([] as Member[]);
-    };
-  }, [user?.id, searchQuery, page, ordering]); // ContactType: 'contactType',
+export const downloadContact = async (member: Member) => {
+  // ContactType: 'contactType',
   // Name: 'name',
   // FirstName: 'firstName',
   // MiddleName: 'middleName',
@@ -99,6 +53,138 @@ const LedenlijstScreen = () => {
   // Note: 'note',
   // Dates: 'dates',
   // Relationships:
+  if (await Contacts.isAvailableAsync()) {
+    const contact = {
+      name: member.voornaam,
+      contactType: Contacts.ContactTypes.Person,
+      [Contacts.Fields.FirstName]: member.voornaam,
+      [Contacts.Fields.LastName]: member.achternaam,
+      [Contacts.Fields.MiddleName]: member.voorletters,
+      [Contacts.Fields.Company]: "E.S.R Theta",
+      [Contacts.Fields.PhoneNumbers]: member.telefoonnummer
+        ? [
+            {
+              number: member.telefoonnummer,
+              isPrimary: true,
+              digits: "1234567890",
+              countryCode: "PA",
+              label: "main",
+            },
+          ]
+        : [undefined],
+      [Contacts.Fields.Emails]: member.emailadres
+        ? [{ email: member.emailadres }]
+        : undefined,
+    };
+
+    const permissions = await Contacts.requestPermissionsAsync();
+    if (permissions.status === "granted") {
+      let groupID;
+      const data1 = await Contacts.getGroupsAsync({
+        groupName: "E.S.R Theta",
+      });
+      if (data1.length < 1) {
+        groupID = await Contacts.createGroupAsync("E.S.R Theta");
+      } else {
+        groupID = data1[0].id as string;
+      }
+      const contact_withSameName = await Contacts.getContactsAsync({
+        name: `${member.voornaam} ${member.voorletters} ${member.achternaam}`,
+      });
+      if (
+        !contact_withSameName.data.some(
+          (mem) =>
+            mem.name ===
+            `${member.voornaam} ${member.voorletters} ${member.achternaam}`
+        )
+      ) {
+        const contactID = await Contacts.addContactAsync(
+          contact as unknown as Contacts.Contact
+        );
+        await Contacts.addExistingContactToGroupAsync(contactID, groupID);
+        await Contacts.presentFormAsync(
+          contactID,
+          contact as unknown as Contacts.Contact
+        );
+        showMessage({
+          message: "Contact toegevoegd",
+          description: `${member.voornaam} ${member.achternaam} is toegevoegd aan je contacten`,
+          type: "success",
+          icon: "success",
+        });
+      } else {
+        const contactID = contact_withSameName.data[0].id;
+        console.log("idd 185;", contactID);
+        await Contacts.addExistingContactToGroupAsync(contactID, groupID);
+        await Contacts.presentFormAsync(
+          contactID,
+          contact as unknown as Contacts.Contact
+        );
+        showMessage({
+          message: "Contact zit al in je contacten lijst",
+          description: `${member.voornaam} ${member.voorletters} ${member.achternaam}`,
+          type: "warning",
+          icon: "warning",
+        });
+      }
+    }
+    // console.log(await Contacts.addContactAsync(contact));
+  }
+  // console.log(res);
+  // }
+};
+type Props = NativeStackScreenProps<DrawerParamList, "LedenlijstScreen">;
+
+const LedenlijstScreen = ({ route, navigation }: Props) => {
+  const { ApiRequest, user } = useContext(ApiContext);
+  const [members, setMembers] = useState<Member[]>([] as Member[]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [next, setNext] = useState<string | undefined>(undefined);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [previous, setPrevious] = useState<string | undefined>(undefined);
+  const [page, setPage] = useState<string | undefined>();
+  const [ordering, setOrdering] = useState<string>("achternaam");
+  const getMembers = async () => {
+    setRefreshing(true);
+    const { res, data } = await ApiRequest<MemberRespose>(
+      `/members/${page || searchQuery || ordering ? "?" : ""}${
+        page ? "page=" + page : ""
+      }${page && searchQuery ? "&" : ""}${
+        searchQuery ? "searchstring=" + searchQuery : ""
+      }${ordering && (searchQuery || page) ? "&" : ""}${
+        ordering ? "ordering=" + ordering : ""
+      }`
+    );
+
+    setMembers(() => data.results);
+    setNext(() =>
+      data.next
+        ? data?.next
+            .split("/v2/members/?")[1]
+            .split("&")
+            .filter((x) => x.includes("page="))[0]
+            .split("=")[1]
+        : undefined
+    );
+    setPrevious(() =>
+      parseInt(next as string) > 2
+        ? (data?.previous
+            ?.split("/v2/members/?")[1]
+            .split("&")
+            .filter((x) => x.includes("page="))[0]
+            .split("=")[1] as string)
+        : undefined
+    );
+    setRefreshing(false);
+  };
+  useEffect(() => {
+    if (user?.id) {
+      getMembers();
+    }
+    return () => {
+      setMembers([] as Member[]);
+    };
+  }, [user?.id, searchQuery, page, ordering]);
   const [visible, setVisible] = useState<MenuVisibility>({});
   function _toggleMenu(name: string) {
     setVisible({ ...visible, [name]: !visible[name] });
@@ -106,178 +192,113 @@ const LedenlijstScreen = () => {
   const _getVisible = (name: string) => !!visible[name];
 
   const renderItem = ({ item }: { item: Member }) => {
-    const downloadContact = async () => {
-      if (await Contacts.isAvailableAsync()) {
-        const contact = {
-          name: item.voornaam,
-          contactType: Contacts.ContactTypes.Person,
-          [Contacts.Fields.FirstName]: item.voornaam,
-          [Contacts.Fields.LastName]: item.achternaam,
-          [Contacts.Fields.MiddleName]: item.voorletters,
-          [Contacts.Fields.Company]: 'E.S.R Theta',
-          [Contacts.Fields.PhoneNumbers]: item.telefoonnummer
-            ? [
-                {
-                  number: item.telefoonnummer,
-                  isPrimary: true,
-                  digits: '1234567890',
-                  countryCode: 'PA',
-                  label: 'main',
-                },
-              ]
-            : [undefined],
-          [Contacts.Fields.Emails]: item.emailadres
-            ? [{ email: item.emailadres }]
-            : undefined,
-        };
-
-        const permissions = await Contacts.requestPermissionsAsync();
-        if (permissions.status === 'granted') {
-          let groupID;
-          const data1 = await Contacts.getGroupsAsync({
-            groupName: 'E.S.R Theta',
-          });
-          if (data1.length < 1) {
-            groupID = await Contacts.createGroupAsync('E.S.R Theta');
-          } else {
-            groupID = data1[0].id as string;
-          }
-          const contact_withSameName = await Contacts.getContactsAsync({
-              name: `${item.voornaam} ${item.voorletters} ${item.achternaam}`,
-            })
-          if (
-            !contact_withSameName.data.some(
-              (mem) => mem.name === `${item.voornaam} ${item.voorletters} ${item.achternaam}`
-            )
-          ) {
-            const contactID = await Contacts.addContactAsync(
-              contact as unknown as Contacts.Contact
-            );
-            await Contacts.addExistingContactToGroupAsync(contactID, groupID);
-            await Contacts.presentFormAsync(
-              contactID,
-              contact as unknown as Contacts.Contact
-            );
-            showMessage({
-              message: 'Contact toegevoegd',
-              description: `${item.voornaam} ${item.achternaam} is toegevoegd aan je contacten`,
-              type: 'success',
-              icon: 'success',
-            });
-          } else {
-            const contactID = contact_withSameName.data[0].id
-            console.log('idd 185;', contactID);
-            await Contacts.addExistingContactToGroupAsync(contactID, groupID);
-            await Contacts.presentFormAsync(
-              contactID,
-              contact as unknown as Contacts.Contact
-            );
-            showMessage({
-              message: 'Contact zit al in je contacten lijst',
-              description: `${item.voornaam} ${item.voorletters} ${item.achternaam}`,
-              type: 'warning',
-              icon: 'warning',
-            });
-          }
-        }
-        // console.log(await Contacts.addContactAsync(contact));
-      }
-      // console.log(res);
-      // }
-    };
-
     let avatarSize = 75;
     return (
-      <View style={styles.itemContainer}>
-        {item?.foto !== null ? (
-          <Avatar.Image source={{ uri: item?.foto }} size={avatarSize} />
-        ) : (
-          <Avatar.Text size={avatarSize} label={item.voorletters} />
-        )}
-        <View style={styles.itemTextContentContainer}>
-          <View style={styles.itemHeaderContainer}>
-            <Text
-              style={[styles.header]}
-              ellipsizeMode="tail"
-              numberOfLines={1}>
-              {item.voornaam} {item.achternaam}
-            </Text>
-          </View>
-          <View style={styles.itemMessageContainer}>
-            <View style={styles.flex}>
-              <Text ellipsizeMode="tail" numberOfLines={1}>
-                {item.opleiding}
-              </Text>
-              <Text numberOfLines={1} ellipsizeMode="tail">
-                {item.ploeglidmaatschappen
-                  .map((ploeg) => ploeg.ploeg.naam)
-                  .join(', ')}
+      <TouchableRipple
+        onPress={() =>
+          navigation.navigate("AuthenticatedStack", {
+            screen: "ProfilePagina",
+            params: { id: item?.id },
+          })
+        }
+      >
+        <View style={styles.itemContainer}>
+          {item?.foto !== null ? (
+            <Avatar.Image source={{ uri: item?.foto }} size={avatarSize} />
+          ) : (
+            <Avatar.Text size={avatarSize} label={item.voorletters} />
+          )}
+          <View style={styles.itemTextContentContainer}>
+            <View style={styles.itemHeaderContainer}>
+              <Text
+                style={[styles.header]}
+                ellipsizeMode="tail"
+                numberOfLines={1}
+              >
+                {item.voornaam} {item.achternaam}
               </Text>
             </View>
-            <Menu
-              visible={_getVisible('member' + item.id)}
-              onDismiss={() => _toggleMenu('member' + item.id)}
-              anchor={
-                <TouchableRipple
-                  onPress={() => {
-                    _toggleMenu('member' + item.id);
-                  }}>
-                  <Ionicons
-                    name={'ellipsis-vertical-circle-outline'}
-                    color={'blue'}
-                    size={24}
-                    onPressFunction={() => _toggleMenu('member' + item.id)}
-                    style={styles.icon}
-                  />
-                </TouchableRipple>
-              }>
-              <Menu.Item
-                onPress={() => Linking.openURL(`tel:${item.telefoonnummer}`)}
-                title={'Bellen'}
-                icon={'phone-outline'}
-              />
-              <Menu.Item
-                onPress={() =>
-                  Linking.openURL(`https://wa.me/${item.telefoonnummer}`)
+            <View style={styles.itemMessageContainer}>
+              <View style={styles.flex}>
+                <Text ellipsizeMode="tail" numberOfLines={1}>
+                  {item.opleiding}
+                </Text>
+                <Text numberOfLines={1} ellipsizeMode="tail">
+                  {item.ploeglidmaatschappen
+                    .map((ploeg) => ploeg.ploeg.naam)
+                    .join(", ")}
+                </Text>
+              </View>
+              <Menu
+                visible={_getVisible("member" + item.id)}
+                onDismiss={() => _toggleMenu("member" + item.id)}
+                anchor={
+                  <TouchableRipple
+                    onPress={() => {
+                      _toggleMenu("member" + item.id);
+                    }}
+                  >
+                    <Ionicons
+                      name={"ellipsis-vertical-circle-outline"}
+                      color={"blue"}
+                      size={24}
+                      onPressFunction={() => _toggleMenu("member" + item.id)}
+                      style={styles.icon}
+                    />
+                  </TouchableRipple>
                 }
-                title={'Whatsappen'}
-                icon={'whatsapp'}
-              />
-              <Menu.Item
-                onPress={downloadContact}
-                icon={'account-box-multiple-outline'}
-                title={'Contact Toevoegen'}
-              />
-            </Menu>
+              >
+                <Menu.Item
+                  onPress={() => Linking.openURL(`tel:${item.telefoonnummer}`)}
+                  title={"Bellen"}
+                  icon={"phone-outline"}
+                />
+                <Menu.Item
+                  onPress={() =>
+                    Linking.openURL(
+                      `whatsapp://send?phone=${item.telefoonnummer}`
+                    )
+                  }
+                  title={"Whatsappen"}
+                  icon={"whatsapp"}
+                />
+                <Menu.Item
+                  onPress={() => downloadContact(item)}
+                  icon={"account-box-multiple-outline"}
+                  title={"Contact Toevoegen"}
+                />
+              </Menu>
+            </View>
           </View>
         </View>
-      </View>
+      </TouchableRipple>
     );
   };
   return (
     <>
       <Menu
-        visible={_getVisible('search')}
-        onDismiss={() => _toggleMenu('search')}
+        visible={_getVisible("search")}
+        onDismiss={() => _toggleMenu("search")}
         anchor={
           <Searchbar
             placeholder="Search Leden"
             onChangeText={(query: string) => setSearchQuery(query)}
-            onIconPress={() => _toggleMenu('search')}
+            onIconPress={() => _toggleMenu("search")}
             value={searchQuery}
             style={styles.searchbar}
           />
-        }>
+        }
+      >
         <Menu.Item
           onPress={async () => {
-            setOrdering((nu) => (nu === 'voornaam' ? '-voornaam' : 'voornaam'));
+            setOrdering((nu) => (nu === "voornaam" ? "-voornaam" : "voornaam"));
           }}
           title="Order op voornaam"
         />
         <Menu.Item
           onPress={async () => {
             setOrdering((nu) =>
-              nu === 'achternaam' ? '-achternaam' : 'achternaam'
+              nu === "achternaam" ? "-achternaam" : "achternaam"
             );
           }}
           title="Order op achternaam"
@@ -285,7 +306,7 @@ const LedenlijstScreen = () => {
         <Menu.Item
           onPress={async () => {
             setOrdering((nu) =>
-              nu === 'geboortedatum' ? '-geboortedatum' : 'geboortedatum'
+              nu === "geboortedatum" ? "-geboortedatum" : "geboortedatum"
             );
           }}
           title="Order op gebortedatum"
@@ -313,7 +334,8 @@ const LedenlijstScreen = () => {
                 onPress={() => {
                   setPage(() => previous);
                 }}
-                disabled={previous === undefined}>
+                disabled={previous === undefined}
+              >
                 Previous
               </Button>
             )}
@@ -324,7 +346,8 @@ const LedenlijstScreen = () => {
             {next !== undefined && (
               <Button
                 onPress={() => setPage(() => next)}
-                disabled={next === undefined}>
+                disabled={next === undefined}
+              >
                 next
               </Button>
             )}
@@ -351,28 +374,28 @@ const styles = StyleSheet.create({
   },
   itemContainer: {
     marginBottom: 16,
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   itemTextContentContainer: {
-    flexDirection: 'column',
+    flexDirection: "column",
     flex: 1,
     marginLeft: 16,
   },
   itemHeaderContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   itemMessageContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     flexGrow: 1,
   },
   read: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   icon: {
     marginLeft: 16,
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
   },
   date: {
     fontSize: 12,

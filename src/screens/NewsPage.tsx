@@ -11,10 +11,9 @@ import { NewsArticle, NewsResponse } from "../models/News";
 import React, { useContext, useEffect, useState } from "react";
 
 import ApiContext from "../context/ApiContext";
-import { baseUrl } from "../context/AuthContext";
 
 const NewsPage = () => {
-  const { ApiRequest, user } = useContext(ApiContext);
+  const { ApiRequest, user , baseUrl} = useContext(ApiContext);
   const [newsArticles, setNewsArticles] = useState<NewsArticle[]>(
     [] as NewsArticle[]
   );
@@ -74,7 +73,7 @@ const NewsPage = () => {
         >
           <Card.Cover
             source={{
-              uri: (baseUrl().slice(0, -3) + item.photo_url) as string,
+              uri: (baseUrl.slice(0, -3) + item.photo_url) as string,
             }}
           />
           <Card.Title title={item.title} subtitle={item.subtitle} />
