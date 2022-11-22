@@ -3,14 +3,12 @@ import * as React from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
 
 /**
- *
  * @param children the text that will be rendered as markdown
  * @returns Bootleg self coded markdown
  */
 export default function RenderMarkdown({ children }: { children: string }) {
   // render markdown in react native components
-
-  function getMarkdownComponents(child: string) {
+  function GetMarkdownComponents({ i, child }: { i: number; child: string }) {
     let bolds = child.match(/\*\*(.*?)\*\*/g) || [];
     // let underlines = child.match(/\_(.*?)\_/g) || [];
     // extract all links in the following format from string [link name](link url)
@@ -49,10 +47,7 @@ export default function RenderMarkdown({ children }: { children: string }) {
 
     const renderText = (text: string) => {
       return (
-        <Text
-          key={Math.floor(Math.random() * 1000) + "markdownText:" + text}
-          style={styles.text}
-        >
+        <Text key={`markdownText: ${i}` + text} style={styles.text}>
           {text}
         </Text>
       );
@@ -60,10 +55,7 @@ export default function RenderMarkdown({ children }: { children: string }) {
 
     const renderBold = (text: string) => {
       return (
-        <Text
-          key={Math.floor(Math.random() * 1000) + "markdownBold:" + text}
-          style={styles.bold}
-        >
+        <Text key={`markdownBold: ${i}` + text} style={styles.bold}>
           {text}
         </Text>
       );
@@ -71,10 +63,7 @@ export default function RenderMarkdown({ children }: { children: string }) {
 
     const renderItalic = (text: string) => {
       return (
-        <Text
-          key={Math.floor(Math.random() * 1000) + "markdownItalic:" + text}
-          style={styles.italic}
-        >
+        <Text key={`markdownItalic: ${i}` + text} style={styles.italic}>
           {text}
         </Text>
       );
@@ -84,64 +73,43 @@ export default function RenderMarkdown({ children }: { children: string }) {
       switch (level) {
         case 1:
           return (
-            <Text
-              key={Math.floor(Math.random() * 1000) + "markdownHeader1:" + text}
-              style={styles.h1}
-            >
+            <Text key={`markdownHeader1: ${i}` + text} style={styles.h1}>
               {text}
             </Text>
           );
         case 2:
           return (
-            <Text
-              key={Math.floor(Math.random() * 1000) + "markdownHeader2:" + text}
-              style={styles.h2}
-            >
+            <Text key={`markdownHeader2: ${i}` + text} style={styles.h2}>
               {text}
             </Text>
           );
         case 3:
           return (
-            <Text
-              key={Math.floor(Math.random() * 1000) + "markdownHeader3:" + text}
-              style={styles.h3}
-            >
+            <Text key={`markdownHeader3: ${i}` + text} style={styles.h3}>
               {text}
             </Text>
           );
         case 4:
           return (
-            <Text
-              key={Math.floor(Math.random() * 1000) + "markdownHeader4:" + text}
-              style={styles.h4}
-            >
+            <Text key={`markdownHeader4: ${i}` + text} style={styles.h4}>
               {text}
             </Text>
           );
         case 5:
           return (
-            <Text
-              key={Math.floor(Math.random() * 1000) + "markdownHeader5:" + text}
-              style={styles.h5}
-            >
+            <Text key={`markdownHeader5: ${i}` + text} style={styles.h5}>
               {text}
             </Text>
           );
         case 6:
           return (
-            <Text
-              key={Math.floor(Math.random() * 1000) + "markdownHeader6:" + text}
-              style={styles.h6}
-            >
+            <Text key={`markdownHeader6: ${i}` + text} style={styles.h6}>
               {text}
             </Text>
           );
       }
       return (
-        <Text
-          key={Math.floor(Math.random() * 1000) + "markdownHeader7:" + text}
-          style={styles.text}
-        >
+        <Text key={`markdownHeader7: ${i}` + text} style={styles.text}>
           {text}
         </Text>
       );
@@ -149,10 +117,7 @@ export default function RenderMarkdown({ children }: { children: string }) {
 
     const renderQuote = (text: string) => {
       return (
-        <Text
-          key={Math.floor(Math.random() * 1000) + "markdownQuote:" + text}
-          style={styles.quote}
-        >
+        <Text key={`markdownQuote: ${i}` + text} style={styles.quote}>
           {text}
         </Text>
       );
@@ -161,7 +126,7 @@ export default function RenderMarkdown({ children }: { children: string }) {
     const renderImage = (text: string, src: string) => {
       return (
         <Image
-          key={Math.floor(Math.random() * 1000) + "markdownImage" + text}
+          key={`markdownImage: ${i}` + text}
           style={styles.image}
           source={{ uri: src }}
         />
@@ -182,7 +147,7 @@ export default function RenderMarkdown({ children }: { children: string }) {
             )
           : null}
         {blockQuote !== undefined && (
-          <View style={styles.blockQuote}>
+          <View style={styles.blockQuote} key={`afeas: ${i}`}>
             {blockQuote?.map((bq: string, i) =>
               renderQuote(bq.replace(/^(>) /gm, ""))
             )}
@@ -204,11 +169,13 @@ export default function RenderMarkdown({ children }: { children: string }) {
       </>
     );
   }
-
   return (
     <>
-      {children.split("\n").map((child) => getMarkdownComponents(child))}
-      {/* <Text>{children}</Text> */}
+      {children.split("\n").map((child, i) => {
+        return (
+          <GetMarkdownComponents key={"GetMardown: " + i} i={i} child={child} />
+        );
+      })}
     </>
   );
 }
@@ -316,3 +283,4 @@ const styles = StyleSheet.create({
     color: "#000",
   },
 });
+"add-outline"||"star-half"||"star"||"star-half"||"trophy"||"medal"
