@@ -169,6 +169,7 @@ export default function RenderMarkdown({ children }: { children: string }) {
       </>
     );
   }
+  // TODO: lists
   return (
     <>
       {children.split("\n").map((child, i) => {

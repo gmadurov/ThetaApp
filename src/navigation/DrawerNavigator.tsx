@@ -13,13 +13,15 @@ import NewsPage from "../screens/NewsPage";
 import WalletUpgrateScreen from "../screens/WalletUpgrateScreen";
 import { AuthenticatedStackParamsList } from "./AuthenticatedStack";
 import { useNavigation } from "@react-navigation/native";
+import PhotoAlbumScreen from "../screens/PhotoAlbumScreen";
 
 export type DrawerParamList = {
-  Chat: undefined;
+  "Spam/Frust": undefined;
   LoginScreen: undefined;
   NewsPage: undefined;
   WalletUpgrateScreen: undefined;
   LedenlijstScreen: undefined;
+  PhotoAlbumScreen: undefined;
   [key: string]: undefined | object;
 };
 
@@ -64,10 +66,17 @@ const DrawerNavigator = () => {
         }}
       />
       <Drawer.Screen
-        name="Chat"
+        name="Spam/Frust"
         component={ChatNavigator}
         options={{
           headerShown: false,
+        }}
+      />
+      <Drawer.Screen
+        name="PhotoAlbumScreen"
+        component={PhotoAlbumScreen}
+        options={{
+          title: "Foto Albums",
         }}
       />
       <Drawer.Screen

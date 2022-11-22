@@ -1,59 +1,48 @@
-import {
-  Avatar,
-  Button,
-  Card,
-  Chip,
-  Menu,
-  Searchbar,
-  TouchableRipple,
-} from "react-native-paper";
 import { FlatList, StyleSheet, Text, View } from "react-native";
-import { NewsArticle, NewsResponse } from "../models/News";
 import React, { useContext, useEffect, useState } from "react";
-
-import ApiContext from "../context/ApiContext";
-import { Ionicons } from "@expo/vector-icons";
-import PdfScreen from "./PdfScreen";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { DrawerParamList } from "../navigation/DrawerNavigator";
-import RenderMarkdown from "../components/RenderMarkdown";
+import { Button, Card, Chip } from "react-native-paper";
+import { Ionicons } from "@expo/vector-icons";
+import { PhotoAlbum, PhotoAlbumResponse } from "../models/PhotoAlbulms";
+import ApiContext from "../context/ApiContext";
+import dayjs from "dayjs";
 
-type Props = NativeStackScreenProps<DrawerParamList, "NewsPage">;
-
-const NewsPage = ({ route, navigation }: Props) => {
+type Props = NativeStackScreenProps<DrawerParamList, "PhotoAlbumScreen">;
+const PhotoAlbumScreen = ({ route, navigation }: Props) => {
   const { ApiRequest, user, baseUrl } = useContext(ApiContext);
-  const [newsArticles, setNewsArticles] = useState<NewsArticle[]>(
-    [] as NewsArticle[]
+  const [photoAlbums, setPhotoAlbums] = useState<PhotoAlbum[]>(
+    [] as PhotoAlbum[]
   );
   const [next, setNext] = useState<string | undefined>(undefined);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [previous, setPrevious] = useState<string | undefined>(undefined);
   const [page, setPage] = useState<string | undefined>();
-  const [ordering, setOrdering] = useState<string>("");
-  const getNewsArticles = async () => {
+  const [ordering, setOrdering] = useState<string>("achternaam");
+  const getObjects = async () => {
     setRefreshing(true);
-    const { res, data } = await ApiRequest<NewsResponse>(
-      `/news/${page || ordering ? "?" : ""}${page ? "page=" + page : ""}${
-        ordering && page ? "&" : ""
-      }${ordering ? "ordering=" + ordering : ""}`
+    const { res, data } = await ApiRequest<PhotoAlbumResponse>(
+      `/photoalbums/${page || ordering ? "?" : ""}${
+        page ? "page=" + page : ""
+      }${ordering && page ? "&" : ""}${ordering ? "ordering=" + ordering : ""}`
     );
 
-    setNewsArticles(() => data.results);
+    setPhotoAlbums(() => data.results);
     setNext(() =>
       data.next
         ? data?.next
-            .split("/v2/news/?")[1]
+            .split("/v2/photoalbums/?")[1]
             .split("&")
-            .filter((x) => x.includes("page="))[0]
+            .filter((x: string) => x.includes("page="))[0]
             .split("=")[1]
         : undefined
     );
     setPrevious(() =>
       parseInt(next as string) > 2
         ? (data?.previous
-            ?.split("/v2/news/?")[1]
+            ?.split("/v2/photoalbums/?")[1]
             .split("&")
-            .filter((x) => x.includes("page="))[0]
+            .filter((x: string) => x.includes("page="))[0]
             .split("=")[1] as string)
         : undefined
     );
@@ -61,60 +50,50 @@ const NewsPage = ({ route, navigation }: Props) => {
   };
   useEffect(() => {
     if (user?.id) {
-      getNewsArticles();
+      getObjects();
     }
     return () => {
-      setNewsArticles([] as NewsArticle[]);
+      setPhotoAlbums([] as PhotoAlbum[]);
     };
   }, [user?.id, page, ordering]);
   const [lines, setLines] = useState({} as { [key: string]: number });
-  
-  const renderItem = ({ item }: { item: NewsArticle }) => {
+
+  const renderItem = ({ item }: { item: PhotoAlbum }) => {
     return (
       <>
         <Card
           style={styles.card}
           mode={"elevated"}
-          onPress={() =>
-            setLines({ ...lines, [item.id]: lines[item.id] !== 200 ? 200 : 4 })
-          }
+          onPress={() => {
+              navigation.navigate("AuthenticatedStack", {
+                screen: "SinglePhotoAlbum",
+                params: {
+                  id: item.id,
+                },
+              });
+            }}
         >
-          {item.photo_url && (
+          {item.photos[0] && (
             <Card.Cover
               source={{
-                uri: (baseUrl.slice(0, -3) + item.photo_url) as string,
+                uri: (baseUrl.slice(0, -3) + item.photos[0].thumb) as string,
               }}
             />
           )}
-          <Card.Title title={item.title} subtitle={item.subtitle} />
+          <Card.Title
+            title={item.title}
+            subtitle={`Door ${item.author}, ${
+              item.date_edited
+                ? "voor het laatst geupdate op " +
+                  dayjs(item.date_edited).format("D MMM YYYY")
+                : ""
+            }`}
+          />
           <Card.Content>
             <Text ellipsizeMode="tail" numberOfLines={lines[item.id] || 4}>
-              <RenderMarkdown>{item.content}</RenderMarkdown>
+              {dayjs(item.album_date).format("MMM D YYYY")}
             </Text>
           </Card.Content>
-          {item.attachment_url && (
-            <Card.Actions
-              style={{
-                justifyContent: "flex-end",
-              }}
-            >
-              <Chip
-                avatar={<Ionicons name={"document-attach"} size={20} />}
-                onPress={() => {
-                  navigation.navigate("AuthenticatedStack", {
-                    screen: "PdfScreen",
-                    params: {
-                      uri: baseUrl.slice(0, -3) + item.attachment_url,
-                      type: item.attachment_file_type,
-                    },
-                  });
-                }}
-                // style={styles.chip}
-              >
-                Bijlage
-              </Chip>
-            </Card.Actions>
-          )}
         </Card>
       </>
     );
@@ -122,16 +101,16 @@ const NewsPage = ({ route, navigation }: Props) => {
   return (
     <>
       <FlatList
-        data={newsArticles}
+        data={photoAlbums}
         renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.container}
+        // contentContainerStyle={styles.container}
         refreshing={refreshing}
         onRefresh={async () => {
           setRefreshing(true);
-          await getNewsArticles();
+          await getObjects();
           setRefreshing(false);
         }}
         ListHeaderComponent={
@@ -165,10 +144,9 @@ const NewsPage = ({ route, navigation }: Props) => {
   );
 };
 
-export default NewsPage;
+export default PhotoAlbumScreen;
 
 const styles = StyleSheet.create({
-  container: {},
   card: {
     margin: 4,
     paddingBottom: 9,
