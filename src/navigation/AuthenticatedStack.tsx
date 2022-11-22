@@ -24,7 +24,7 @@ export default function AuthenticatedStack() {
         headerTintColor: "white",
         contentStyle: { backgroundColor: GlobalStyles.colors.primary1 },
       }}
-    >
+      >
       <Stack.Screen
         name="ProfilePagina"
         component={ProfileScreen}
@@ -45,7 +45,7 @@ export default function AuthenticatedStack() {
         }}
       />
       <Stack.Screen name="PdfScreen" component={PdfScreen} />
-      <Stack.Screen name="SinglePhotoAlbum" component={PhotoAlbumScreen_single} />
+      <Stack.Screen name="SinglePhotoAlbum" component={PhotoAlbumScreen_single} options={{headerShown: false}}/>
     </Stack.Navigator>
   );
 }

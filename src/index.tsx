@@ -71,6 +71,7 @@ function AuthenticatedRoutes({ isTryingLogin }: { isTryingLogin: boolean }) {
   return (
     <>
       <Stack.Navigator
+      // initialRouteName="AuthenticatedStack"
         screenOptions={{
           headerStyle: { backgroundColor: GlobalStyles.colors.primary3 },
           headerTintColor: "white",
@@ -184,13 +185,13 @@ export default function App() {
   return (
     <PaperProvider>
       <NavigationContainer>
-        <SafeAreaView style={{ flex: 1 }}>
+        {/* <SafeAreaView style={{ flex: 1, marginBottom: 0}}> */}
           <StatusBar />
           <FullProvider>
             <Root />
           </FullProvider>
           <FlashMessage position="top" />
-        </SafeAreaView>
+        {/* </SafeAreaView> */}
       </NavigationContainer>
     </PaperProvider>
   );

@@ -1,12 +1,6 @@
 import * as Contacts from "expo-contacts";
 
-import {
-  Avatar,
-  Button,
-  Menu,
-  Searchbar,
-  TouchableRipple,
-} from "react-native-paper";
+import { Avatar, Button, Menu, Searchbar, TouchableRipple } from "react-native-paper";
 import { FlatList, Linking, StyleSheet, Text, View } from "react-native";
 import { Member, MemberRespose } from "../models/Members";
 import React, { useCallback, useContext, useEffect } from "react";
@@ -72,9 +66,7 @@ export const downloadContact = async (member: Member) => {
             },
           ]
         : [undefined],
-      [Contacts.Fields.Emails]: member.emailadres
-        ? [{ email: member.emailadres }]
-        : undefined,
+      [Contacts.Fields.Emails]: member.emailadres ? [{ email: member.emailadres }] : undefined,
     };
 
     const permissions = await Contacts.requestPermissionsAsync();
@@ -93,19 +85,12 @@ export const downloadContact = async (member: Member) => {
       });
       if (
         !contact_withSameName.data.some(
-          (mem) =>
-            mem.name ===
-            `${member.voornaam} ${member.voorletters} ${member.achternaam}`
+          (mem) => mem.name === `${member.voornaam} ${member.voorletters} ${member.achternaam}`
         )
       ) {
-        const contactID = await Contacts.addContactAsync(
-          contact as unknown as Contacts.Contact
-        );
+        const contactID = await Contacts.addContactAsync(contact as unknown as Contacts.Contact);
         await Contacts.addExistingContactToGroupAsync(contactID, groupID);
-        await Contacts.presentFormAsync(
-          contactID,
-          contact as unknown as Contacts.Contact
-        );
+        await Contacts.presentFormAsync(contactID, contact as unknown as Contacts.Contact);
         showMessage({
           message: "Contact toegevoegd",
           description: `${member.voornaam} ${member.achternaam} is toegevoegd aan je contacten`,
@@ -116,10 +101,7 @@ export const downloadContact = async (member: Member) => {
         const contactID = contact_withSameName.data[0].id;
         console.log("idd 185;", contactID);
         await Contacts.addExistingContactToGroupAsync(contactID, groupID);
-        await Contacts.presentFormAsync(
-          contactID,
-          contact as unknown as Contacts.Contact
-        );
+        await Contacts.presentFormAsync(contactID, contact as unknown as Contacts.Contact);
         showMessage({
           message: "Contact zit al in je contacten lijst",
           description: `${member.voornaam} ${member.voorletters} ${member.achternaam}`,
@@ -147,13 +129,9 @@ const LedenlijstScreen = ({ route, navigation }: Props) => {
   const getMembers = async () => {
     setRefreshing(true);
     const { res, data } = await ApiRequest<MemberRespose>(
-      `/members/${page || searchQuery || ordering ? "?" : ""}${
-        page ? "page=" + page : ""
-      }${page && searchQuery ? "&" : ""}${
+      `/members/${page || searchQuery || ordering ? "?" : ""}${page ? "page=" + page : ""}${page && searchQuery ? "&" : ""}${
         searchQuery ? "searchstring=" + searchQuery : ""
-      }${ordering && (searchQuery || page) ? "&" : ""}${
-        ordering ? "ordering=" + ordering : ""
-      }`
+      }${ordering && (searchQuery || page) ? "&" : ""}${ordering ? "ordering=" + ordering : ""}`
     );
 
     setMembers(() => data.results);
@@ -186,9 +164,7 @@ const LedenlijstScreen = ({ route, navigation }: Props) => {
     };
   }, [user?.id, searchQuery, page, ordering]);
   const [visible, setVisible] = useState<MenuVisibility>({});
-  function _toggleMenu(name: string) {
-    setVisible({ ...visible, [name]: !visible[name] });
-  }
+  const _toggleMenu = (name: string) => setVisible({ ...visible, [name]: !visible[name] });
   const _getVisible = (name: string) => !!visible[name];
 
   const renderItem = ({ item }: { item: Member }) => {
@@ -210,11 +186,7 @@ const LedenlijstScreen = ({ route, navigation }: Props) => {
           )}
           <View style={styles.itemTextContentContainer}>
             <View style={styles.itemHeaderContainer}>
-              <Text
-                style={[styles.header]}
-                ellipsizeMode="tail"
-                numberOfLines={1}
-              >
+              <Text style={[styles.header]} ellipsizeMode="tail" numberOfLines={1}>
                 {item.voornaam} {item.achternaam}
               </Text>
             </View>
@@ -224,9 +196,7 @@ const LedenlijstScreen = ({ route, navigation }: Props) => {
                   {item.opleiding}
                 </Text>
                 <Text numberOfLines={1} ellipsizeMode="tail">
-                  {item.ploeglidmaatschappen
-                    .map((ploeg) => ploeg.ploeg.naam)
-                    .join(", ")}
+                  {item.ploeglidmaatschappen.map((ploeg) => ploeg.ploeg.naam).join(", ")}
                 </Text>
               </View>
               <Menu
@@ -254,11 +224,7 @@ const LedenlijstScreen = ({ route, navigation }: Props) => {
                   icon={"phone-outline"}
                 />
                 <Menu.Item
-                  onPress={() =>
-                    Linking.openURL(
-                      `whatsapp://send?phone=${item.telefoonnummer}`
-                    )
-                  }
+                  onPress={() => Linking.openURL(`whatsapp://send?phone=${item.telefoonnummer}`)}
                   title={"Whatsappen"}
                   icon={"whatsapp"}
                 />
@@ -297,17 +263,13 @@ const LedenlijstScreen = ({ route, navigation }: Props) => {
         />
         <Menu.Item
           onPress={async () => {
-            setOrdering((nu) =>
-              nu === "achternaam" ? "-achternaam" : "achternaam"
-            );
+            setOrdering((nu) => (nu === "achternaam" ? "-achternaam" : "achternaam"));
           }}
           title="Order op achternaam"
         />
         <Menu.Item
           onPress={async () => {
-            setOrdering((nu) =>
-              nu === "geboortedatum" ? "-geboortedatum" : "geboortedatum"
-            );
+            setOrdering((nu) => (nu === "geboortedatum" ? "-geboortedatum" : "geboortedatum"));
           }}
           title="Order op gebortedatum"
         />
@@ -344,10 +306,7 @@ const LedenlijstScreen = ({ route, navigation }: Props) => {
         ListFooterComponent={
           <>
             {next !== undefined && (
-              <Button
-                onPress={() => setPage(() => next)}
-                disabled={next === undefined}
-              >
+              <Button onPress={() => setPage(() => next)} disabled={next === undefined}>
                 next
               </Button>
             )}
