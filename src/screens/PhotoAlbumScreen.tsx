@@ -18,7 +18,7 @@ const PhotoAlbumScreen = ({ route, navigation }: Props) => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [previous, setPrevious] = useState<string | undefined>(undefined);
   const [page, setPage] = useState<string | undefined>();
-  const [ordering, setOrdering] = useState<string>("achternaam");
+  const [ordering, setOrdering] = useState<string>("");
   const getObjects = async () => {
     setRefreshing(true);
     const { res, data } = await ApiRequest<PhotoAlbumResponse>(

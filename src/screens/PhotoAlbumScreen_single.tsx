@@ -1,23 +1,46 @@
-import React, { useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Photo, PhotoAlbum, PhotoAlbumResponse } from "../models/PhotoAlbulms";
 import ApiContext from "../context/ApiContext";
 import dayjs from "dayjs";
 import { AuthenticatedStackParamsList } from "../navigation/AuthenticatedStack";
-import { TouchableOpacity, View, Text, Image, FlatList, Dimensions, StyleSheet, ScrollView } from "react-native";
-import { Appbar, Modal, Portal, Provider, TouchableRipple } from "react-native-paper";
+import {
+  TouchableOpacity,
+  View,
+  Text,
+  Image,
+  FlatList,
+  Dimensions,
+  StyleSheet,
+  ScrollView,
+  ViewToken,
+  GestureResponderEvent,
+  Share,
+} from "react-native";
+import { ActivityIndicator, Appbar, Divider, Menu, Modal, Portal, Provider, TouchableRipple } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 // import Carousel, { Pagination } from 'react-native-snap-carousel';
+import ReactNativeZoomableView from "@dudigital/react-native-zoomable-view/src/ReactNativeZoomableView";
+import { showMessage } from "react-native-flash-message";
 
 const { width, height } = Dimensions.get("window");
-type ModalVisibility = { [key: string]: boolean };
 type Props = NativeStackScreenProps<AuthenticatedStackParamsList, "SinglePhotoAlbum">;
+type ContextualMenuCoord = { x: number; y: number };
+type MenuVisibility = {
+  [key: string]: boolean | undefined;
+};
+
 const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
   const { ApiRequest, user, baseUrl } = useContext(ApiContext);
+  const [contextualMenuCoord, setContextualMenuCoor] = useState<ContextualMenuCoord>({ x: 0, y: 0 });
+  const [visible, setVisible] = React.useState<MenuVisibility>({});
+
   const [photoAlbum, setPhotoAlbum] = useState<PhotoAlbum>({} as PhotoAlbum);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [indexSelected, setIndexSelected] = useState(0);
-  const [modalVisible, setModalVisible] = useState<ModalVisibility>({});
+  const [selectedPhotoId, setSelectedPhotoId] = useState<string | number>(0);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
   const SPACING = 10;
   const THUMB_SIZE = 80;
   const getObjects = async () => {
@@ -27,23 +50,14 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
     setPhotoAlbum(() => data);
     setRefreshing(false);
   };
-  // useLayoutEffect(() => {
-  //   navigation.setOptions({
-  //     header: ({ navigation }) => (
-  //       <Appbar.Header style={{ backgroundColor: "white" }}>
-  //         {navigation.canGoBack() && (
-  //           <Appbar.BackAction
-  //             onPress={() => {
-  //               navigation.goBack();
-  //             }}
-  //           />
-  //         )}
-  //         <Appbar.Content title={photoAlbum.title} />
-  //       </Appbar.Header>
-  //     ),
-  //   });
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [photoAlbum, navigation, route]);
+  const _handleLongPress = (event: GestureResponderEvent) => {
+    const { nativeEvent } = event;
+    setContextualMenuCoor({
+      x: nativeEvent.pageX,
+      y: nativeEvent.pageY,
+    });
+    setVisible({ menu3: true });
+  };
   useEffect(() => {
     if (user?.id) {
       getObjects();
@@ -52,136 +66,75 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
       setPhotoAlbum({} as PhotoAlbum);
     };
   }, [navigation, route.params.id]);
-  const _getVisible = (name: string | number) => !!modalVisible[name];
-  const _toggleMenu = (name: string | number) => setModalVisible({ ...modalVisible, [name]: !modalVisible[name] });
-  const carouselRef = useRef<FlatList<Photo>>();
-  const flatListRef = useRef<FlatList<Photo>>();
-  const onTouchThumbnail = (id: number) => {
-    if (id === indexSelected) return;
-    carouselRef?.current?.scrollToIndex({ index: id });
-  };
-  const onSelect = (indexSelected: number) => {
-    setIndexSelected(indexSelected);
+  const _getModal = () => !!modalVisible;
+  const _toggleModal = () => setModalVisible(!modalVisible);
+  const _toggleMenu = (name: string) => () => setVisible({ ...visible, [name]: !visible[name] });
+  const _getVisible = (name: string) => !!visible[name];
 
-    flatListRef?.current?.scrollToOffset({
-      offset: indexSelected * THUMB_SIZE,
+  const _getLoading = (name: string | number) => !!loading[name];
+  const _toggleLoading = (name: string | number) => setLoading({ ...loading, [name]: !loading[name] });
+  // console.log(modalVisible);
+
+  const carouselRef = useRef<ScrollView>(null);
+  const flatListRef_display = useRef<FlatList<Photo> | null>(null);
+  const flatListRef_Modal = useRef<FlatList<Photo> | null>(null);
+  const flatListRef_thumb = useRef<FlatList<Photo> | null>(null);
+  const onTouchThumbnail = (id: number, photoId: string | number) => {
+    if (id === indexSelected) return;
+    carouselRef?.current?.scrollTo({ x: (indexSelected * height) / 2, y: 0, animated: true });
+    flatListRef_display?.current?.scrollToOffset({
+      offset: id * THUMB_SIZE,
+      animated: true,
+    });
+    flatListRef_Modal?.current?.scrollToOffset({
+      offset: id * THUMB_SIZE,
+      animated: true,
+    });
+    flatListRef_thumb?.current?.scrollToOffset({
+      offset: id * THUMB_SIZE,
       animated: true,
     });
   };
-  const renderItem = ({ item: object }: { item: Photo }) => {
-    // style={{ width: 100, height: 100 }}
-    // pick random color
-    const colors = [
-      "#f0f0f0",
-      "#e0e0e0",
-      "#d0d0d0",
-      "#c0c0c0",
-      "#b0b0b0",
-      "#a0a0a0",
-      "#909090",
-      "#808080",
-      "#707070",
-      "#606060",
-      "#505050",
-      "#404040",
-      "#303030",
-      "#202020",
-      "#101010",
-      "#000000",
-    ];
-    const color = colors[Math.floor(Math.random() * colors.length)];
-    return (
-      <>
-        <Portal>
-          <Modal
-            // animationType="slide"
-            // transparent={true}
-            style={styles.modal}
-            visible={_getVisible(object.id)}
-            onDismiss={() => _toggleMenu(object.id)}
-          >
-            <ScrollView
-              contentContainerStyle={{
-                justifyContent: "space-between",
-                alignItems: "flex-end",
-              }}
-              onScrollToTop={() => _toggleMenu(object.id)}
-            >
-              <Ionicons
-                name="close"
-                size={50}
-                color="orange"
-                style={{ zIndex: 10, top: 100, right: 0 }}
-                onPress={() => {
-                  _toggleMenu(object.id);
-                }}
-              />
-              <Image
-                source={{ uri: baseUrl.slice(0, -3) + object.url }}
-                style={{ width: width, height: height, resizeMode: "center" }}
-              />
 
-              {/* <ScrollView
-                horizontal={true}
-                showsHorizontalScrollIndicator={false}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={{
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  flexDirection: "row",
-                }}
-                onScroll={(e) => {
-                  _toggleMenu(object.id);
-                }}
-                scrollEventThrottle={16}
-              >
-                {photoAlbum.photos.map((photo) => (
-                  <Image
-                    source={{ uri: baseUrl.slice(0, -3) + photo.thumb }}
-                    style={{ width: 50, height: 50, resizeMode: "contain" }}
-                  />
-                ))}
-              </ScrollView> */}
-              <FlatList
-                horizontal={true}
-                data={photoAlbum.photos}
-                style={{ position: "absolute", bottom: 80 }}
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{
-                  paddingHorizontal: SPACING,
-                }}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item, index }) => (
-                  <TouchableOpacity activeOpacity={0.9}>
-                    <Image
-                      style={{
-                        width: THUMB_SIZE,
-                        height: THUMB_SIZE,
-                        marginRight: SPACING,
-                        borderRadius: 16,
-                        borderWidth: index === indexSelected ? 4 : 0.75,
-                        borderColor: index === indexSelected ? "orange" : "white",
-                      }}
-                      source={{ uri: baseUrl.slice(0, -3) + item.url }}
-                    />
-                  </TouchableOpacity>
-                )}
-              />
-            </ScrollView>
-          </Modal>
-        </Portal>
-        <TouchableRipple
-          style={styles.imageContainer}
-          onPress={() => {
-            _toggleMenu(object.id);
-            onSelect(object.id);
-          }}
-        >
-          <Image source={{ uri: baseUrl.slice(0, -3) + object.thumb }} style={[styles.image, { backgroundColor: color }]} />
-        </TouchableRipple>
-      </>
-    );
+  const onSelect = (id: number, photoId: string | number) => {
+    setIndexSelected(id);
+    setSelectedPhotoId(photoId);
+    // if (id === indexSelected) return;
+    // carouselRef?.current?.scrollTo({ x: (indexSelected + 1) * width, y: 0, animated: true });
+    // flatListRef_display?.current?.scrollToIndex({
+    //   index: id,
+    //   animated: true,
+    //   viewPosition: 0.5,
+    // });
+    flatListRef_Modal?.current?.scrollToIndex({
+      index: id,
+      animated: true,
+      viewPosition: 0.5,
+    });
+    flatListRef_thumb?.current?.scrollToIndex({
+      index: id,
+      animated: true,
+      viewPosition: 0.5,
+    });
   };
+  const colors = [
+    "#f0f0f0",
+    "#e0e0e0",
+    "#d0d0d0",
+    "#c0c0c0",
+    "#b0b0b0",
+    "#a0a0a0",
+    "#909090",
+    "#808080",
+    "#707070",
+    "#606060",
+    "#505050",
+    "#404040",
+    "#303030",
+    "#202020",
+    "#101010",
+    "#000000",
+  ];
   return (
     <>
       <Appbar.Header style={{ backgroundColor: "white" }}>
@@ -194,13 +147,199 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
         )}
         <Appbar.Content title={photoAlbum.title} />
       </Appbar.Header>
+      <Portal>
+        <Modal
+          // animationType="slide"
+          // transparent={true}
+          style={styles.modal}
+          visible={_getModal()}
+          onDismiss={() => _toggleModal()}
+        >
+          <Ionicons
+            name="ellipsis-vertical-outline"
+            size={45}
+            color="orange"
+            style={{ zIndex: 10, top: 10, right: 60, position: "absolute" }}
+            onPress={_handleLongPress}
+          />
+          <Ionicons
+            name="close"
+            size={50}
+            color="orange"
+            style={{ zIndex: 10, top: 10, right: 10, position: "absolute" }}
+            onPress={() => {
+              _toggleModal();
+            }}
+          />
+          {/* <ScrollView
+            ref={carouselRef}
+            contentContainerStyle={{
+              justifyContent: "space-between",
+              alignItems: "flex-end",
+            }}
+            onScrollToTop={() => _toggleMenu()}
+            horizontal={true}
+          >
+            {photoAlbum.photos?.map((object, index) => (
+              <View key={`ViewPhoto-${object.id}-${index}`}>
+                <ReactNativeZoomableView
+                  zoomEnabled={true}key={`ViewPhoto-${object.id}-${index}`}
+                  maxZoom={1.5}
+                  minZoom={0.5}
+                  zoomStep={0.25}
+                  initialZoom={0.9}
+                  bindToBorders={true}
+                  // onZoomAfter={this.logOutZoomState}
+                  style={{ width: width, height: height }}
+                >
+                  <Image
+                    // onLoadStart={() => _toggleLoading(object.id)}
+                    // onLoadEnd={() => _toggleLoading(object.id)}
+                    key={`photo-${object.id}-${index}`}
+                    source={{
+                      uri: baseUrl.slice(0, -3) + object.url,
+                    }}
+                    // defaultSource={require("../assets/Square-Loading.gif")}
+                    style={{ width: width, height: height, resizeMode: "center", borderColor: "white", borderWidth: 2}}
+                  />
+                </ReactNativeZoomableView>
+              </View>
+            ))}
+          </ScrollView> */}
+          <FlatList
+            ref={flatListRef_Modal}
+            horizontal={true}
+            data={photoAlbum.photos}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              justifyContent: "space-between",
+            }}
+            getItemLayout={(data, index) => ({ length: width, offset: width * index, index })}
+            initialScrollIndex={indexSelected}
+            keyExtractor={(item) => item.id.toString()}
+            snapToInterval={width}
+            snapToAlignment="center"
+            decelerationRate={"fast"}
+            onScrollToIndexFailed={() => {
+              flatListRef_Modal?.current?.scrollToEnd();
+            }}
+            onViewableItemsChanged={useCallback(({ viewableItems }: { viewableItems: ViewToken[] }) => {
+              setIndexSelected(viewableItems[0]?.index || 0);
+              setSelectedPhotoId(viewableItems[0]?.item.id);
+              flatListRef_thumb?.current?.scrollToIndex({
+                index: viewableItems[0]?.index as number,
+                animated: true,
+                viewPosition: 0.5,
+              });
+            }, [])}
+            renderItem={({ item: object, index }) => (
+              <View key={`ViewPhoto-${object.id}-${index}`}>
+                <ReactNativeZoomableView
+                  zoomEnabled={true}
+                  maxZoom={1.5}
+                  minZoom={0.5}
+                  zoomStep={0.25}
+                  initialZoom={0.95}
+                  bindToBorders={true}
+                  // onZoomAfter={this.logOutZoomState}
+                  style={{ width: width, height: height }}
+                >
+                  <Menu visible={_getVisible("menu3")} onDismiss={_toggleMenu("menu3")} anchor={contextualMenuCoord}>
+                    <Menu.Item
+                      onPress={() => {
+                        Share.share({
+                          title: `E.S.R Theta: ${object.id}`,
+                          // message: baseUrl.slice(0, -3) + object.url,
+                          url: baseUrl.slice(0, -3) + object.url,
+                        })
+                          .then((err) =>
+                            showMessage({ message: "Shared", type: "success", duration: 1500, icon: "success" })
+                          )
+                          .catch((err) =>
+                            showMessage({ message: "Failed to Share", type: "danger", duration: 1500, icon: "danger" })
+                          );
+                      }}
+                      title="Share"
+                    />
+                    <Menu.Item onPress={() => {}} title="Item 2" />
+                    <Divider />
+                    <Menu.Item onPress={() => {}} title="Item 3" disabled />
+                  </Menu>
+
+                  <Image
+                    // onLoadStart={() => _toggleLoading(object.id)}
+                    // onLoadEnd={() => _toggleLoading(object.id)}
+                    key={`photo-${object.id}-${index}`}
+                    source={{
+                      uri: baseUrl.slice(0, -3) + object.url,
+                    }}
+                    defaultSource={require("../assets/loadingBoat.jpg")}
+                    style={{ width: width, height: height, resizeMode: "center" }}
+                  />
+                </ReactNativeZoomableView>
+              </View>
+            )}
+          />
+          <FlatList
+            ref={flatListRef_thumb}
+            horizontal={true}
+            data={photoAlbum.photos}
+            style={{ position: "absolute", bottom: 10 }}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingHorizontal: SPACING,
+            }}
+            initialScrollIndex={indexSelected}
+            keyExtractor={(item) => item.id.toString()}
+            onScrollToIndexFailed={() => {
+              flatListRef_thumb?.current?.scrollToEnd();
+            }}
+            renderItem={({ item, index }) => (
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={() => {
+                  onSelect(index, item.id);
+                }}
+              >
+                <Image
+                  style={{
+                    width: THUMB_SIZE,
+                    height: THUMB_SIZE,
+                    marginRight: SPACING,
+                    borderRadius: 16,
+                    borderWidth: index === indexSelected ? 4 : 0.75,
+                    borderColor: index === indexSelected ? "orange" : "white",
+                  }}
+                  defaultSource={require("../assets/loadingBoat.jpg")}
+                  source={{ uri: baseUrl.slice(0, -3) + item.url }}
+                />
+              </TouchableOpacity>
+            )}
+          />
+        </Modal>
+      </Portal>
       <Provider>
         <FlatList
-          ref={flatListRef}
+          ref={flatListRef_display}
           data={photoAlbum.photos}
-          renderItem={renderItem}
+          renderItem={({ item: object, index }) => (
+            <TouchableRipple
+              style={styles.imageContainer}
+              onPress={() => {
+                _toggleModal();
+                onSelect(index, object.id);
+              }}
+            >
+              <Image
+                source={{ uri: baseUrl.slice(0, -3) + object.thumb }}
+                defaultSource={require("../assets/loadingBoat.jpg")}
+                style={[styles.image, { backgroundColor: colors[Math.floor(Math.random() * colors.length)] }]}
+              />
+            </TouchableRipple>
+          )}
           keyExtractor={(item) => item.id.toString()}
           showsVerticalScrollIndicator={false}
+          onScrollToIndexFailed={() => flatListRef_display?.current?.scrollToEnd()}
           // contentContainerStyle={styles.container}
           refreshing={refreshing}
           numColumns={2}
