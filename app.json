@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "ThêtaApp",
-    "slug": "nativeapp",
+    "name": "E.S.R. Thêta",
+    "slug": "esr-theta",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./src/assets/pwa-icons/manifest-icon-512.png",
@@ -14,7 +14,9 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
@@ -23,10 +25,19 @@
         "foregroundImage": "./src/assets/pwa-icons/manifest-icon-512.png",
         "backgroundColor": "#FFFFFF"
       },
-      "permissions": ["WRITE_CONTACTS"]
+      "permissions": [
+        "WRITE_CONTACTS"
+      ],
+      "package": "com.gusmadvol.esrtheta"
     },
     "web": {
       "favicon": "./src/assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "9c1dbaba-dbf3-4035-b053-6cd52db7d77a"
+      }
+    },
+    "owner": "gusmadvol"
   }
 }

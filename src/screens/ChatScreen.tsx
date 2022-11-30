@@ -1,6 +1,6 @@
 import { Avatar, Button, Divider } from "react-native-paper";
 import { ChatItem, SpamResponse } from "../models/Spams";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { FlatList, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 
 import ApiContext from "../context/ApiContext";
@@ -9,7 +9,6 @@ import RenderMarkdown from "../components/RenderMarkdown";
 import dayjs from "dayjs";
 import { ChatParamList } from "../navigation/ChatNavigator";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-
 type Props = NativeStackScreenProps<
   ChatParamList,
   "FrustSchrift" | "SpamSchrift"
@@ -21,6 +20,7 @@ const ChatScreen = ({ route, navigation }: Props) => {
     route.name === "SpamSchrift",
   ];
   const { ApiRequest, user, baseUrl } = useContext(ApiContext);
+  const { width } = useWindowDimensions();
 
   const [chats, setChats] = useState<ChatItem[]>([] as ChatItem[]);
   const [next, setNext] = useState<string | undefined>(undefined);
@@ -83,8 +83,7 @@ const ChatScreen = ({ route, navigation }: Props) => {
   const getSpams = async () => {
     setRefreshing(true);
     const { res, data } = await ApiRequest<SpamResponse>(
-      `/${!!spam ? "spams" : ""}${!!frust ? "frusts" : ""}/${
-        page || ordering ? "?" : ""
+      `/${!!spam ? "spams" : ""}${!!frust ? "frusts" : ""}/${page || ordering ? "?" : ""
       }${page ? "page=" + page : ""}
       ${ordering && page ? "&" : ""}${ordering ? "order_by=" + ordering : ""}`
     );
@@ -94,23 +93,23 @@ const ChatScreen = ({ route, navigation }: Props) => {
     setNext(() =>
       data.next
         ? data?.next
-            .split(
-              `/v2/${!!spam ? "spams" : ""}${!!frust ? "frusts" : ""}/?`
-            )[1]
-            .split("&")
-            .filter((x) => x.includes("page="))[0]
-            .split("=")[1]
+          .split(
+            `/v2/${!!spam ? "spams" : ""}${!!frust ? "frusts" : ""}/?`
+          )[1]
+          .split("&")
+          .filter((x) => x.includes("page="))[0]
+          .split("=")[1]
         : undefined
     );
     setPrevious(() =>
       parseInt(next as string) > 2
         ? (data?.previous
-            ?.split(
-              `/v2/${!!spam ? "spams" : ""}${!!frust ? "frusts" : ""}/?`
-            )[1]
-            .split("&")
-            .filter((x) => x.includes("page="))[0]
-            .split("=")[1] as string)
+          ?.split(
+            `/v2/${!!spam ? "spams" : ""}${!!frust ? "frusts" : ""}/?`
+          )[1]
+          .split("&")
+          .filter((x) => x.includes("page="))[0]
+          .split("=")[1] as string)
         : undefined
     );
     setRefreshing(false);
@@ -127,6 +126,7 @@ const ChatScreen = ({ route, navigation }: Props) => {
 
   const renderItem = ({ item }: { item: ChatItem }) => {
     let avatarSize = 75;
+
     return (
       <View style={styles.itemContainer}>
         {item?.author.photo_url !== null ? (
@@ -167,39 +167,39 @@ const ChatScreen = ({ route, navigation }: Props) => {
             <Text style={[styles.date]}>
               {frust
                 ? getSigns(item.author.frust_count).map((x, i) =>
-                    x !== "code-slash-outline" ? (
-                      <Ionicons
-                        key={`spamTrophy: ${i} ${item.id} ${x}`}
-                        // @ts-ignore
-                        name={x}
-                        size={styles.date.fontSize}
-                      />
-                    ) : (
-                      <Text
-                        key={`spamHash: ${i} ${item.id} ${x}`}
-                        style={styles.date}
-                      >
-                        #
-                      </Text>
-                    )
+                  x !== "code-slash-outline" ? (
+                    <Ionicons
+                      key={`spamTrophy: ${i} ${item.id} ${x}`}
+                      // @ts-ignore
+                      name={x}
+                      size={styles.date.fontSize}
+                    />
+                  ) : (
+                    <Text
+                      key={`spamHash: ${i} ${item.id} ${x}`}
+                      style={styles.date}
+                    >
+                      #
+                    </Text>
                   )
+                )
                 : getSigns(item.author.spam_count).map((x, i) =>
-                    x !== "code-slash-outline" ? (
-                      <Ionicons
-                        key={`spamTrophy: ${i} ${item.id} ${x}`}
-                        // @ts-ignore
-                        name={x}
-                        size={styles.date.fontSize}
-                      />
-                    ) : (
-                      <Text
-                        key={`spamHash: ${i} ${item.id} ${x}`}
-                        style={styles.date}
-                      >
-                        #
-                      </Text>
-                    )
-                  )}
+                  x !== "code-slash-outline" ? (
+                    <Ionicons
+                      key={`spamTrophy: ${i} ${item.id} ${x}`}
+                      // @ts-ignore
+                      name={x}
+                      size={styles.date.fontSize}
+                    />
+                  ) : (
+                    <Text
+                      key={`spamHash: ${i} ${item.id} ${x}`}
+                      style={styles.date}
+                    >
+                      #
+                    </Text>
+                  )
+                )}
               {frust ? item.author.frust_count : item.author.spam_count}
             </Text>
           </View>

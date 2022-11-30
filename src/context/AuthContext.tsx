@@ -40,12 +40,12 @@ export type AuthContextType = {
     password: string,
     setIsAuthenticating: any
   ) => Promise<void>;
-  logoutFunc(user?: User): Promise<void>;baseUrl: string;
+  logoutFunc(user?: User): Promise<void>; baseUrl: string;
   setBaseUrl: React.Dispatch<React.SetStateAction<string>>;
   originalRequest<TResponse>(url: string, config: object): Promise<{
     res: Response;
     data: TResponse;
-}>
+  }>
 };
 const AuthContext = createContext({} as AuthContextType);
 
@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       let url = await AsyncStorage.getItem("baseUrl");
       setBaseUrl(url || "");
     };
-    return () => {};
+    return () => { };
   }, []);
 
   useEffect(() => {
@@ -83,12 +83,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     wakeUp();
   }, [baseUrl]);
+  useLayoutEffect(() => {
+    async function save() {
+      if (user.id) {
+        await AsyncStorage.setItem("user", user ? JSON.stringify(user) : "");
+      } else {
+        let data = await AsyncStorage.getItem("user");
+        setUser(data ? JSON.parse(data) : {} as User);
+      }
+    }
+    save();
+  }, [user]);
   async function loginFunc(
     username: string,
     password: string,
     setIsAuthenticating: any
   ) {
-    let {res, data} = await originalRequest<FailedRequest>(`/login/`, {
+    let { res, data } = await originalRequest<FailedRequest>(`/login/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -106,6 +117,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         refresh_token: jwtDecode(data.refresh_token),
       });
       await AsyncStorage.setItem("authTokens", JSON.stringify(data));
+
       // navigation.replace("ProductsPage");
     } else {
       showMessage({
@@ -173,7 +185,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     authTokens,
     setAuthTokens,
     baseUrl,
-    setBaseUrl,originalRequest
+    setBaseUrl, originalRequest
   };
   // user && navigate("../login", { replace: true });
   return <AuthContext.Provider value={data}>{children}</AuthContext.Provider>;

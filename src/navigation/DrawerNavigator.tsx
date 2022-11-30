@@ -33,8 +33,7 @@ const DrawerNavigator = () => {
   const navigation = useNavigation();
   return (
     <Drawer.Navigator
-      // initialRouteName="NewsPage"
-      initialRouteName="PhotoAlbumScreen"
+      initialRouteName="NewsPage"
       id="DrawerStack"
       // screenOptions={{  headerStyle: { backgroundColor: "#351401" },//   headerTintColor: "white",//   sceneContainerStyle: { backgroundColor: "#3f2f25" },//   drawerContentStyle: { backgroundColor: "#351401" },//   drawerInactiveTintColor: "white",//   drawerActiveTintColor: "#351401",    //   drawerActiveBackgroundColor: "#e4baa1",// }}
       drawerContent={(props: any) => {
