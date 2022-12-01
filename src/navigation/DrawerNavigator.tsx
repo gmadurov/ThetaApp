@@ -10,7 +10,7 @@ import AuthContext from "../context/AuthContext";
 import LedenlijstScreen from "../screens/LedenlijstScreen";
 import ChatNavigator from "./ChatNavigator";
 import NewsPage from "../screens/NewsPage";
-import WalletUpgrateScreen from "../screens/WalletUpgrateScreen";
+// import WalletUpgrateScreen from "../screens/WalletUpgrateScreen";
 import { AuthenticatedStackParamsList } from "./AuthenticatedStack";
 import { useNavigation } from "@react-navigation/native";
 import PhotoAlbumScreen from "../screens/PhotoAlbumScreen";

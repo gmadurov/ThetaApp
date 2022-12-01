@@ -146,7 +146,7 @@ const ChatScreen = ({ route, navigation }: Props) => {
               onPress={() => {
                 navigation.navigate("AuthenticatedStack", {
                   screen: "ProfilePagina",
-                  params: { id: item?.id },
+                  params: { id: item?.author.id },
                 });
               }}
             >

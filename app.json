@@ -12,13 +12,15 @@
       "backgroundColor": "#ffffff"
     },
     "updates": {
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/9c1dbaba-dbf3-4035-b053-6cd52db7d77a"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.gusmadvol.esrtheta"
     },
     "android": {
       "adaptiveIcon": {
@@ -38,6 +40,9 @@
         "projectId": "9c1dbaba-dbf3-4035-b053-6cd52db7d77a"
       }
     },
-    "owner": "gusmadvol"
+    "owner": "gusmadvol",
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    }
   }
 }
