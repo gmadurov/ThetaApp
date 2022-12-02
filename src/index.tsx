@@ -4,13 +4,7 @@ import "react-native-gesture-handler";
 import * as SplashScreen from "expo-splash-screen";
 
 import FlashMessage, { showMessage } from "react-native-flash-message";
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useState,
-} from "react";
+import React, { useCallback, useContext, useEffect, useLayoutEffect, useState } from "react";
 import TokenInfo, { AuthToken, AuthToken_decoded } from "./models/AuthToken";
 
 import ApiContext from "./context/ApiContext";
@@ -21,8 +15,7 @@ import { FullProvider } from "./context/FullContext";
 import { GlobalStyles } from "./constants/styles";
 import LoginScreen from "./screens/LoginScreen";
 import { NavigationContainer } from "@react-navigation/native";
-import { Provider as PaperProvider } from "react-native-paper";
-import { SafeAreaView } from "react-native";
+import { MD3LightTheme as DefaultTheme, Provider as PaperProvider, useTheme } from "react-native-paper";
 import { StatusBar } from "expo-status-bar";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import jwt_decode from "jwt-decode";
@@ -30,6 +23,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import TabNavigator from "./navigation/TabNavigator";
 import ProfileScreen from "./screens/ProfileScreen";
 import AuthenticatedStack from "./navigation/AuthenticatedStack";
+import { useAppTheme } from "./context/Theme";
 
 export type AppParamsList = {
   Login: undefined;
@@ -39,6 +33,7 @@ export type AppParamsList = {
 };
 
 const Stack = createNativeStackNavigator<AppParamsList>();
+
 
 function AuthRoutes() {
   return (
@@ -71,7 +66,7 @@ function AuthenticatedRoutes({ isTryingLogin }: { isTryingLogin: boolean }) {
   return (
     <>
       <Stack.Navigator
-      // initialRouteName="AuthenticatedStack"
+        // initialRouteName="AuthenticatedStack"
         screenOptions={{
           headerStyle: { backgroundColor: GlobalStyles.colors.primary3 },
           headerTintColor: "white",
@@ -111,19 +106,14 @@ function Root() {
 
   useLayoutEffect(() => {
     async function fetchToken() {
-      const storedTokens = JSON.parse(
-        (await AsyncStorage.getItem("authTokens")) as string
-      ) as AuthToken;
+      const storedTokens = JSON.parse((await AsyncStorage.getItem("authTokens")) as string) as AuthToken;
       // console.log("index 111", JSON.parse(storedTokens || "{}"));
       // await AsyncStorage.clear()
       // console.log(storedTokens ? true : false);
 
       if (storedTokens) {
         setUser(storedTokens.user);
-        if (
-          (jwt_decode(storedTokens.access_token as string) as TokenInfo).exp <
-          Date.now()
-        ) {
+        if ((jwt_decode(storedTokens.access_token as string) as TokenInfo).exp < Date.now()) {
           setIsTryingLogin(false);
         }
         showMessage({
@@ -155,42 +145,27 @@ function Root() {
   if (isTryingLogin) {
     return null;
   }
-  return (
-    <Navigation onLayout={onLayoutRootView} isTryingLogin={isTryingLogin} />
-  );
+  return <Navigation onLayout={onLayoutRootView} isTryingLogin={isTryingLogin} />;
 }
 
-function Navigation({
-  onLayout,
-  isTryingLogin,
-}: {
-  onLayout: () => Promise<void>;
-  isTryingLogin: boolean;
-}) {
+function Navigation({ onLayout, isTryingLogin }: { onLayout: () => Promise<void>; isTryingLogin: boolean }) {
   const { user } = useContext(AuthContext);
 
-  return (
-    <>
-      {!user?.id ? (
-        <AuthRoutes />
-      ) : (
-        <AuthenticatedRoutes isTryingLogin={isTryingLogin} />
-      )}
-    </>
-  );
+  return <>{!user?.id ? <AuthRoutes /> : <AuthenticatedRoutes isTryingLogin={isTryingLogin} />}</>;
 }
 // messages
 // "success" (green), "warning" (orange), "danger" (red), "info" (blue) and "default" (gray)
 export default function App() {
+  const theme = useAppTheme();
   return (
-    <PaperProvider>
+    <PaperProvider theme={theme}>
       <NavigationContainer>
         {/* <SafeAreaView style={{ flex: 1, marginBottom: 0}}> */}
-          <StatusBar />
-          <FullProvider>
-            <Root />
-          </FullProvider>
-          <FlashMessage position="top" />
+        <StatusBar />
+        <FullProvider>
+          <Root />
+        </FullProvider>
+        <FlashMessage position="top" />
         {/* </SafeAreaView> */}
       </NavigationContainer>
     </PaperProvider>

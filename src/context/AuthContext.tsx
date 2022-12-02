@@ -5,24 +5,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "../models/Users";
 import jwtDecode from "jwt-decode";
 import { showMessage } from "react-native-flash-message";
-import { useNavigation } from "@react-navigation/native";
-
-//  "https://stropdas.herokuapp.com";
-//  "http://127.0.0.1:8000";
-// export const baseUrl = () => {
-//   let url: string;
-//   // console.log("process.env.NODE_ENV", process.env.NODE_ENV);
-
-//   if (process.env.NODE_ENV === "development") {
-//     url = "https://web35.esrtheta.nl/v2";
-//     // url = "http://10.0.2.2:8000";
-//   } else if (process.env.NODE_ENV === "production") {
-//     url = "https://api.esrtheta.nl/v2";
-//   } else {
-//     url = "http://10.0.2.2:8000";
-//   }
-//   return url;
-// };
 
 export interface FailedRequest extends AuthToken {
   non_field_errors?: string[];
@@ -35,26 +17,24 @@ export type AuthContextType = {
   setAuthTokens: React.Dispatch<React.SetStateAction<AuthToken>>;
   authTokensDecoded: AuthToken_decoded;
   setAuthTokensDecoded: React.Dispatch<React.SetStateAction<AuthToken_decoded>>;
-  loginFunc: (
-    username: string,
-    password: string,
-    setIsAuthenticating: any
-  ) => Promise<void>;
-  logoutFunc(user?: User): Promise<void>; baseUrl: string;
+  loginFunc: (username: string, password: string, setIsAuthenticating: any) => Promise<void>;
+  logoutFunc(user?: User): Promise<void>;
+  baseUrl: string;
   setBaseUrl: React.Dispatch<React.SetStateAction<string>>;
-  originalRequest<TResponse>(url: string, config: object): Promise<{
+  originalRequest<TResponse>(
+    url: string,
+    config: object
+  ): Promise<{
     res: Response;
     data: TResponse;
-  }>
+  }>;
 };
 const AuthContext = createContext({} as AuthContextType);
 
 export default AuthContext;
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // dont use useFetch here because it will not work
-  const [authTokensDecoded, setAuthTokensDecoded] = useState<AuthToken_decoded>(
-    {} as AuthToken_decoded
-  );
+  const [authTokensDecoded, setAuthTokensDecoded] = useState<AuthToken_decoded>({} as AuthToken_decoded);
   const [authTokens, setAuthTokens] = useState<AuthToken>({} as AuthToken);
   const [user, setUser] = useState<User>({} as User);
   /**this function is simply to wake up the backend when working with heroku */
@@ -66,7 +46,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       let url = await AsyncStorage.getItem("baseUrl");
       setBaseUrl(url || "");
     };
-    return () => { };
+    return () => {};
   }, []);
 
   useEffect(() => {
@@ -83,22 +63,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     wakeUp();
   }, [baseUrl]);
+
   useLayoutEffect(() => {
     async function save() {
-      if (user.id) {
-        await AsyncStorage.setItem("user", user ? JSON.stringify(user) : "");
+      if (authTokens?.access_token) {
+        await AsyncStorage.setItem("authTokens", authTokens.access_token ? JSON.stringify(authTokens) : "");
       } else {
-        let data = await AsyncStorage.getItem("user");
-        setUser(data ? JSON.parse(data) : {} as User);
+        let data = await AsyncStorage.getItem("authTokens");
+        // check if the user.exp is expired
+        let locUser = data ? (JSON.parse(data) as AuthToken) : null;
+        console.log("locUser", locUser);
+        if (locUser?.access_token) {
+          setAuthTokens(locUser);
+          setAuthTokensDecoded(jwtDecode(locUser.access_token));
+        } else {
+          await AsyncStorage.removeItem("authTokens");
+        }
       }
     }
     save();
-  }, [user]);
-  async function loginFunc(
-    username: string,
-    password: string,
-    setIsAuthenticating: any
-  ) {
+  }, [authTokens]);
+
+  async function loginFunc(username: string, password: string, setIsAuthenticating: any) {
     let { res, data } = await originalRequest<FailedRequest>(`/login/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -141,12 +127,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setAuthTokensDecoded(() => ({} as AuthToken_decoded));
   }
 
-  async function originalRequest<TResponse>(
-    url: string,
-    config: object
-  ): Promise<{ res: Response; data: TResponse }> {
+  async function originalRequest<TResponse>(url: string, config: object): Promise<{ res: Response; data: TResponse }> {
     let urlFetch;
-
     if (!["", null].includes(baseUrl)) {
       urlFetch = `${baseUrl}${url}`;
       // console.log("urlFetch 162", );
@@ -155,7 +137,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     const res = await fetch(urlFetch, config);
     const data = await res.json();
-    // console.log("originalRequest", data, res?.status);
     if (res?.status === 401) {
       await logoutFunc();
     } else if (res?.status !== 200) {
@@ -174,7 +155,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return { res, data } as { res: Response; data: TResponse };
   }
 
-
   const data = {
     loginFunc,
     logoutFunc,
@@ -185,7 +165,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     authTokens,
     setAuthTokens,
     baseUrl,
-    setBaseUrl, originalRequest
+    setBaseUrl,
+    originalRequest,
   };
   // user && navigate("../login", { replace: true });
   return <AuthContext.Provider value={data}>{children}</AuthContext.Provider>;

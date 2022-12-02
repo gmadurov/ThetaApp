@@ -17,11 +17,22 @@ import {
   GestureResponderEvent,
   Share,
 } from "react-native";
-import { ActivityIndicator, Appbar, Divider, Menu, Modal, Portal, Provider, TouchableRipple } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Appbar,
+  Divider,
+  Menu,
+  Modal,
+  Portal,
+  Provider,
+  ThemeProvider,
+  TouchableRipple,
+} from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 // import Carousel, { Pagination } from 'react-native-snap-carousel';
 import ReactNativeZoomableView from "@dudigital/react-native-zoomable-view/src/ReactNativeZoomableView";
 import { showMessage } from "react-native-flash-message";
+import { theme } from "../context/Theme";
 
 const { width, height } = Dimensions.get("window");
 type Props = NativeStackScreenProps<AuthenticatedStackParamsList, "SinglePhotoAlbum">;
@@ -34,7 +45,6 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
   const { ApiRequest, user, baseUrl } = useContext(ApiContext);
   const [contextualMenuCoord, setContextualMenuCoor] = useState<ContextualMenuCoord>({ x: 0, y: 0 });
   const [visible, setVisible] = React.useState<MenuVisibility>({});
-
   const [photoAlbum, setPhotoAlbum] = useState<PhotoAlbum>({} as PhotoAlbum);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [indexSelected, setIndexSelected] = useState(0);
@@ -135,18 +145,18 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
     "#101010",
     "#000000",
   ];
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      header: () => (
+        <Appbar.Header style={{ backgroundColor: theme.colors.primary }}>
+          {navigation.canGoBack() && <Appbar.BackAction onPress={() => navigation.goBack()} />}
+          <Appbar.Content title={photoAlbum.title} />
+        </Appbar.Header>
+      ),
+    });
+  }, [navigation, photoAlbum.title]);
   return (
     <>
-      <Appbar.Header style={{ backgroundColor: "white" }}>
-        {navigation.canGoBack() && (
-          <Appbar.BackAction
-            onPress={() => {
-              navigation.goBack();
-            }}
-          />
-        )}
-        <Appbar.Content title={photoAlbum.title} />
-      </Appbar.Header>
       <Portal>
         <Modal
           // animationType="slide"
@@ -171,44 +181,10 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
               _toggleModal();
             }}
           />
-          {/* <ScrollView
-            ref={carouselRef}
-            contentContainerStyle={{
-              justifyContent: "space-between",
-              alignItems: "flex-end",
-            }}
-            onScrollToTop={() => _toggleMenu()}
-            horizontal={true}
-          >
-            {photoAlbum.photos?.map((object, index) => (
-              <View key={`ViewPhoto-${object.id}-${index}`}>
-                <ReactNativeZoomableView
-                  zoomEnabled={true}key={`ViewPhoto-${object.id}-${index}`}
-                  maxZoom={1.5}
-                  minZoom={0.5}
-                  zoomStep={0.25}
-                  initialZoom={0.9}
-                  bindToBorders={true}
-                  // onZoomAfter={this.logOutZoomState}
-                  style={{ width: width, height: height }}
-                >
-                  <Image
-                    // onLoadStart={() => _toggleLoading(object.id)}
-                    // onLoadEnd={() => _toggleLoading(object.id)}
-                    key={`photo-${object.id}-${index}`}
-                    source={{
-                      uri: baseUrl.slice(0, -3) + object.url,
-                    }}
-                    // defaultSource={require("../assets/Square-Loading.gif")}
-                    style={{ width: width, height: height, resizeMode: "center", borderColor: "white", borderWidth: 2}}
-                  />
-                </ReactNativeZoomableView>
-              </View>
-            ))}
-          </ScrollView> */}
           <FlatList
             ref={flatListRef_Modal}
             horizontal={true}
+            // style={{ flex: 1 }}
             data={photoAlbum.photos}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{
@@ -262,7 +238,7 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
                       title="Share"
                     />
                     <Menu.Item onPress={() => {}} title="Item 2" />
-                    <Divider />
+                    <View style={{ height: "1px", backgroundColor: theme.colors.backdrop }} />
                     <Menu.Item onPress={() => {}} title="Item 3" disabled />
                   </Menu>
 

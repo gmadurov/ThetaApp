@@ -1,6 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
 import React, { useCallback, useLayoutEffect, useMemo, useRef } from "react";
-import Pdf from "react-native-pdf";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthenticatedStackParamsList } from "../navigation/AuthenticatedStack";
 import { WebView } from "react-native-webview";

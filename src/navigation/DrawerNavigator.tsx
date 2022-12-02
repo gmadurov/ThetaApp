@@ -1,19 +1,16 @@
-import {
-  DrawerContentScrollView,
-  DrawerItem,
-  DrawerItemList,
-  createDrawerNavigator,
-} from "@react-navigation/drawer";
+import { DrawerActions, useNavigation } from "@react-navigation/native";
+import { DrawerContentScrollView, DrawerItem, DrawerItemList, createDrawerNavigator } from "@react-navigation/drawer";
 import React, { useContext } from "react";
 
+import { Appbar } from "react-native-paper";
 import AuthContext from "../context/AuthContext";
-import LedenlijstScreen from "../screens/LedenlijstScreen";
-import ChatNavigator from "./ChatNavigator";
-import NewsPage from "../screens/NewsPage";
 // import WalletUpgrateScreen from "../screens/WalletUpgrateScreen";
 import { AuthenticatedStackParamsList } from "./AuthenticatedStack";
-import { useNavigation } from "@react-navigation/native";
+import ChatNavigator from "./ChatNavigator";
+import LedenlijstScreen from "../screens/LedenlijstScreen";
+import NewsPage from "../screens/NewsPage";
 import PhotoAlbumScreen from "../screens/PhotoAlbumScreen";
+import { theme } from "../context/Theme";
 
 export type DrawerParamList = {
   "Spam/Frust": undefined;
@@ -49,10 +46,7 @@ const DrawerNavigator = () => {
                 })
               }
             />
-            <DrawerItem
-              label="Uitlogen"
-              onPress={async () => await logoutFunc()}
-            />
+            <DrawerItem label="Uitlogen" onPress={async () => await logoutFunc()} />
           </DrawerContentScrollView>
         );
       }}
@@ -61,14 +55,14 @@ const DrawerNavigator = () => {
         name="NewsPage"
         component={NewsPage}
         options={{
-          title: "News Pagina",
-          // backgroundColor: GlobalStyles.colors.primary1,
+          title: "Nieuws",
         }}
       />
       <Drawer.Screen
         name="Spam/Frust"
         component={ChatNavigator}
         options={{
+          title: "Spam en Frusten",
           headerShown: false,
         }}
       />
@@ -77,13 +71,46 @@ const DrawerNavigator = () => {
         component={PhotoAlbumScreen}
         options={{
           title: "Foto Albums",
+          header: ({ navigation }) => (
+            <Appbar.Header style={{ backgroundColor: theme.colors.primary }}>
+              {/* @ts-ignore */}
+              <Appbar.Action
+                onPress={() => {
+                  navigation.dispatch(DrawerActions.openDrawer);
+                }}
+                icon={"menu"}
+              />
+              {/* @ts-ignore */}
+              <Appbar.Content title="Foto Albums" />
+            </Appbar.Header>
+          ),
         }}
       />
       <Drawer.Screen
         name="LedenlijstScreen"
         component={LedenlijstScreen}
         options={{
-          title: "Ledenlijst ",
+          title: "Ledenlijst",
+          header: ({ navigation }) => (
+            <Appbar.Header style={{ backgroundColor: theme.colors.primary }}>
+              <Appbar.Action
+                onPress={() => {
+                  navigation.dispatch(DrawerActions.openDrawer);
+                }}
+                icon={"menu"}
+              />
+              {/* @ts-ignore */}
+              <Appbar.Content title="Ledenlijst" />
+            </Appbar.Header>
+          ),
+          // backgroundColor: GlobalStyles.colors.primary1,
+        }}
+      />
+      <Drawer.Screen
+        name="WalletUpgrade"
+        component={WalletUpgrade}
+        options={{
+          title: "WalletUpgrade",
           // backgroundColor: GlobalStyles.colors.primary1,
         }}
       />

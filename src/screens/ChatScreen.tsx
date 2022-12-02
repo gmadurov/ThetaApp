@@ -1,7 +1,7 @@
 import { Avatar, Button, Divider } from "react-native-paper";
 import { ChatItem, SpamResponse } from "../models/Spams";
 import { FlatList, StyleSheet, Text, useWindowDimensions, View } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
 
 import ApiContext from "../context/ApiContext";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -9,25 +9,16 @@ import RenderMarkdown from "../components/RenderMarkdown";
 import dayjs from "dayjs";
 import { ChatParamList } from "../navigation/ChatNavigator";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-type Props = NativeStackScreenProps<
-  ChatParamList,
-  "FrustSchrift" | "SpamSchrift"
->;
+type Props = NativeStackScreenProps<ChatParamList, "FrustSchrift" | "SpamSchrift">;
 
 const ChatScreen = ({ route, navigation }: Props) => {
-  const [frust, spam] = [
-    route.name === "FrustSchrift",
-    route.name === "SpamSchrift",
-  ];
+  const [frust, spam] = [route.name === "FrustSchrift", route.name === "SpamSchrift"];
   const { ApiRequest, user, baseUrl } = useContext(ApiContext);
-  const { width } = useWindowDimensions();
-
   const [chats, setChats] = useState<ChatItem[]>([] as ChatItem[]);
   const [next, setNext] = useState<string | undefined>(undefined);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [previous, setPrevious] = useState<string | undefined>(undefined);
   const [page, setPage] = useState<string | undefined>();
-  const [pageSize, setPageSize] = useState<number>(25);
   const [ordering, setOrdering] = useState<string>("pub_date");
 
   const getSigns = (n: number) => {
@@ -39,8 +30,7 @@ const ChatScreen = ({ route, navigation }: Props) => {
     } else if (n >= 50 && n < 125) {
       return ["star-half"];
     } else if (n >= 125 && n < 1000) {
-      var remain =
-        n % 250; /**Calculate remainder to determine if half stars are needed */
+      var remain = n % 250; /**Calculate remainder to determine if half stars are needed */
       var div = (n - remain) / 250; /**Calculate amount of hundred's */
       /** Check if amount of spams has a remainder */
       if (remain < 125) {
@@ -63,9 +53,7 @@ const ChatScreen = ({ route, navigation }: Props) => {
       }
       return SpamIcons;
     } else if (n >= 1000 && n < 5000) {
-      var remain =
-        n %
-        1000; /**Calculate remainder to determine if half stars are needed */
+      var remain = n % 1000; /**Calculate remainder to determine if half stars are needed */
       var div = (n - remain) / 1000; /**Calculate amount of hundred's */
       var i = 0;
       var arr = [];
@@ -83,8 +71,7 @@ const ChatScreen = ({ route, navigation }: Props) => {
   const getSpams = async () => {
     setRefreshing(true);
     const { res, data } = await ApiRequest<SpamResponse>(
-      `/${!!spam ? "spams" : ""}${!!frust ? "frusts" : ""}/${page || ordering ? "?" : ""
-      }${page ? "page=" + page : ""}
+      `/${!!spam ? "spams" : ""}${!!frust ? "frusts" : ""}/${page || ordering ? "?" : ""}${page ? "page=" + page : ""}
       ${ordering && page ? "&" : ""}${ordering ? "order_by=" + ordering : ""}`
     );
     // console.log(data.results);
@@ -93,23 +80,19 @@ const ChatScreen = ({ route, navigation }: Props) => {
     setNext(() =>
       data.next
         ? data?.next
-          .split(
-            `/v2/${!!spam ? "spams" : ""}${!!frust ? "frusts" : ""}/?`
-          )[1]
-          .split("&")
-          .filter((x) => x.includes("page="))[0]
-          .split("=")[1]
+            .split(`/v2/${!!spam ? "spams" : ""}${!!frust ? "frusts" : ""}/?`)[1]
+            .split("&")
+            .filter((x) => x.includes("page="))[0]
+            .split("=")[1]
         : undefined
     );
     setPrevious(() =>
       parseInt(next as string) > 2
         ? (data?.previous
-          ?.split(
-            `/v2/${!!spam ? "spams" : ""}${!!frust ? "frusts" : ""}/?`
-          )[1]
-          .split("&")
-          .filter((x) => x.includes("page="))[0]
-          .split("=")[1] as string)
+            ?.split(`/v2/${!!spam ? "spams" : ""}${!!frust ? "frusts" : ""}/?`)[1]
+            .split("&")
+            .filter((x) => x.includes("page="))[0]
+            .split("=")[1] as string)
         : undefined
     );
     setRefreshing(false);
@@ -130,10 +113,7 @@ const ChatScreen = ({ route, navigation }: Props) => {
     return (
       <View style={styles.itemContainer}>
         {item?.author.photo_url !== null ? (
-          <Avatar.Image
-            source={{ uri: baseUrl.slice(0, -3) + item?.author.photo_url }}
-            size={avatarSize}
-          />
+          <Avatar.Image source={{ uri: baseUrl.slice(0, -3) + item?.author.photo_url }} size={avatarSize} />
         ) : (
           <Avatar.Text size={avatarSize} label={item.author.name} />
         )}
@@ -146,7 +126,7 @@ const ChatScreen = ({ route, navigation }: Props) => {
               onPress={() => {
                 navigation.navigate("AuthenticatedStack", {
                   screen: "ProfilePagina",
-                  params: { id: item?.id },
+                  params: { id: item?.author.id },
                 });
               }}
             >
@@ -167,39 +147,33 @@ const ChatScreen = ({ route, navigation }: Props) => {
             <Text style={[styles.date]}>
               {frust
                 ? getSigns(item.author.frust_count).map((x, i) =>
-                  x !== "code-slash-outline" ? (
-                    <Ionicons
-                      key={`spamTrophy: ${i} ${item.id} ${x}`}
-                      // @ts-ignore
-                      name={x}
-                      size={styles.date.fontSize}
-                    />
-                  ) : (
-                    <Text
-                      key={`spamHash: ${i} ${item.id} ${x}`}
-                      style={styles.date}
-                    >
-                      #
-                    </Text>
+                    x !== "code-slash-outline" ? (
+                      <Ionicons
+                        key={`spamTrophy: ${i} ${item.id} ${x}`}
+                        // @ts-ignore
+                        name={x}
+                        size={styles.date.fontSize}
+                      />
+                    ) : (
+                      <Text key={`spamHash: ${i} ${item.id} ${x}`} style={styles.date}>
+                        #
+                      </Text>
+                    )
                   )
-                )
                 : getSigns(item.author.spam_count).map((x, i) =>
-                  x !== "code-slash-outline" ? (
-                    <Ionicons
-                      key={`spamTrophy: ${i} ${item.id} ${x}`}
-                      // @ts-ignore
-                      name={x}
-                      size={styles.date.fontSize}
-                    />
-                  ) : (
-                    <Text
-                      key={`spamHash: ${i} ${item.id} ${x}`}
-                      style={styles.date}
-                    >
-                      #
-                    </Text>
-                  )
-                )}
+                    x !== "code-slash-outline" ? (
+                      <Ionicons
+                        key={`spamTrophy: ${i} ${item.id} ${x}`}
+                        // @ts-ignore
+                        name={x}
+                        size={styles.date.fontSize}
+                      />
+                    ) : (
+                      <Text key={`spamHash: ${i} ${item.id} ${x}`} style={styles.date}>
+                        #
+                      </Text>
+                    )
+                  )}
               {frust ? item.author.frust_count : item.author.spam_count}
             </Text>
           </View>
@@ -212,6 +186,7 @@ const ChatScreen = ({ route, navigation }: Props) => {
       </View>
     );
   };
+
   return (
     <>
       <FlatList
@@ -247,10 +222,7 @@ const ChatScreen = ({ route, navigation }: Props) => {
         ListFooterComponent={
           <>
             {next !== undefined && (
-              <Button
-                onPress={() => setPage(() => next)}
-                disabled={next === undefined}
-              >
+              <Button onPress={() => setPage(() => next)} disabled={next === undefined}>
                 next
               </Button>
             )}

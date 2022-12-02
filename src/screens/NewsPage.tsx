@@ -1,15 +1,7 @@
-import {
-  Avatar,
-  Button,
-  Card,
-  Chip,
-  Menu,
-  Searchbar,
-  TouchableRipple,
-} from "react-native-paper";
+import { Appbar, Avatar, Button, Card, Chip, Menu, Searchbar, TouchableRipple } from "react-native-paper";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { NewsArticle, NewsResponse } from "../models/News";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
 
 import ApiContext from "../context/ApiContext";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,14 +9,14 @@ import PdfScreen from "./PdfScreen";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { DrawerParamList } from "../navigation/DrawerNavigator";
 import RenderMarkdown from "../components/RenderMarkdown";
-
+import { useAppTheme } from "../context/Theme";
+import { DrawerActions } from "@react-navigation/native";
+import { theme } from "../context/Theme";
 type Props = NativeStackScreenProps<DrawerParamList, "NewsPage">;
 
 const NewsPage = ({ route, navigation }: Props) => {
   const { ApiRequest, user, baseUrl } = useContext(ApiContext);
-  const [newsArticles, setNewsArticles] = useState<NewsArticle[]>(
-    [] as NewsArticle[]
-  );
+  const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([] as NewsArticle[]);
   const [next, setNext] = useState<string | undefined>(undefined);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [previous, setPrevious] = useState<string | undefined>(undefined);
@@ -33,9 +25,9 @@ const NewsPage = ({ route, navigation }: Props) => {
   const getNewsArticles = async () => {
     setRefreshing(true);
     const { res, data } = await ApiRequest<NewsResponse>(
-      `/news/${page || ordering ? "?" : ""}${page ? "page=" + page : ""}${
-        ordering && page ? "&" : ""
-      }${ordering ? "ordering=" + ordering : ""}`
+      `/news/${page || ordering ? "?" : ""}${page ? "page=" + page : ""}${ordering && page ? "&" : ""}${
+        ordering ? "ordering=" + ordering : ""
+      }`
     );
 
     setNewsArticles(() => data.results);
@@ -68,16 +60,30 @@ const NewsPage = ({ route, navigation }: Props) => {
     };
   }, [user?.id, page, ordering]);
   const [lines, setLines] = useState({} as { [key: string]: number });
-  
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      header: ({ navigation }) => (
+        <Appbar.Header style={{ backgroundColor: theme.colors.primary }}>
+          {/* @ts-ignore */}
+          <Appbar.Action
+            onPress={() => {
+              navigation.dispatch(DrawerActions.openDrawer);
+            }}
+            icon={"menu"}
+          />
+          {/* @ts-ignore */}
+          <Appbar.Content title="News Pagina" />
+        </Appbar.Header>
+      ),
+    });
+  }, [navigation]);
   const renderItem = ({ item }: { item: NewsArticle }) => {
     return (
       <>
         <Card
           style={styles.card}
           mode={"elevated"}
-          onPress={() =>
-            setLines({ ...lines, [item.id]: lines[item.id] !== 200 ? 200 : 4 })
-          }
+          onPress={() => setLines({ ...lines, [item.id]: lines[item.id] !== 200 ? 200 : 4 })}
         >
           {item.photo_url && (
             <Card.Cover
@@ -151,10 +157,7 @@ const NewsPage = ({ route, navigation }: Props) => {
         ListFooterComponent={
           <>
             {next !== undefined && (
-              <Button
-                onPress={() => setPage(() => next)}
-                disabled={next === undefined}
-              >
+              <Button onPress={() => setPage(() => next)} disabled={next === undefined}>
                 next
               </Button>
             )}

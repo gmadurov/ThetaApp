@@ -6,6 +6,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Appbar } from "react-native-paper";
 import PdfScreen from "../screens/PdfScreen";
 import PhotoAlbumScreen_single from "../screens/PhotoAlbumScreen_single";
+import { theme } from "../context/Theme";
 
 export type AuthenticatedStackParamsList = {
   ProfilePagina: { id: number } | undefined;
@@ -20,32 +21,19 @@ export default function AuthenticatedStack() {
     <Stack.Navigator
       id="AuthenticadedStack"
       screenOptions={{
-        headerStyle: { backgroundColor: GlobalStyles.colors.primary3 },
-        headerTintColor: "white",
-        contentStyle: { backgroundColor: GlobalStyles.colors.primary1 },
+        headerStyle: { backgroundColor: theme.colors.primary },
+        headerTintColor: theme.colors.primary,
+        contentStyle: { backgroundColor: theme.colors.background },
       }}
-      >
+    >
       <Stack.Screen
         name="ProfilePagina"
         component={ProfileScreen}
         // children={() => <ProfileScreen />}
-        options={{
-          header: ({ navigation }) => (
-            <Appbar.Header style={{ backgroundColor: "white" }}>
-              {navigation.canGoBack() && (
-                <Appbar.BackAction
-                  onPress={() => {
-                    navigation.goBack();
-                  }}
-                />
-              )}
-              <Appbar.Content title="Profile Page" />
-            </Appbar.Header>
-          ),
-        }}
+        options={{}}
       />
       <Stack.Screen name="PdfScreen" component={PdfScreen} />
-      <Stack.Screen name="SinglePhotoAlbum" component={PhotoAlbumScreen_single} options={{headerShown: false}}/>
+      <Stack.Screen name="SinglePhotoAlbum" component={PhotoAlbumScreen_single} options={{ headerShown: true }} />
     </Stack.Navigator>
   );
 }

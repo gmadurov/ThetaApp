@@ -4,7 +4,8 @@ import ChatScreen from "../screens/ChatScreen";
 import { Appbar } from "react-native-paper";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-
+import { useAppTheme } from "../context/Theme";
+import { theme } from "../context/Theme";
 export type ChatParamList = {
   FrustSchrift: undefined;
   SpamSchrift: undefined;
@@ -16,13 +17,15 @@ const Tab = createBottomTabNavigator<ChatParamList>();
 export default function TabNavigator() {
   const navigation = useNavigation();
   const Header = ({ title }: { title: string }) => (
-    <Appbar.Header style={{ backgroundColor: "white" }}>
+    <Appbar.Header style={{ backgroundColor: theme.colors.primary }} theme={theme}>
+      {/* @ts-ignore */}
       <Appbar.Action
         onPress={() => {
           navigation.dispatch(DrawerActions.openDrawer);
         }}
         icon={"menu"}
       />
+      {/* @ts-ignore */}
       <Appbar.Content title={title} />
     </Appbar.Header>
   );
@@ -33,21 +36,9 @@ export default function TabNavigator() {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           if (route.name === "FrustSchrift") {
-            return (
-              <Ionicons
-                name={focused ? "alert-outline" : "alert-outline"}
-                size={size}
-                color={color}
-              />
-            );
+            return <Ionicons name={focused ? "alert-outline" : "alert-outline"} size={size} color={color} />;
           } else if (route.name === "SpamSchrift") {
-            return (
-              <Ionicons
-                name={focused ? "help" : "help"}
-                size={size}
-                color={color}
-              />
-            );
+            return <Ionicons name={focused ? "help" : "help"} size={size} color={color} />;
           }
         },
         tabBarInactiveTintColor: "gray",
@@ -56,16 +47,14 @@ export default function TabNavigator() {
     >
       <Tab.Screen
         name="FrustSchrift"
-        // children={() => <ChatScreen frust={true} />}
         component={ChatScreen}
         options={{
           title: "Frustschrift",
           header: () => <Header title="Frustschrift" />,
         }}
-        />
+      />
       <Tab.Screen
         name="SpamSchrift"
-        // children={() => <ChatScreen spam={true} />}
         component={ChatScreen}
         options={{
           title: "Spamschrift",

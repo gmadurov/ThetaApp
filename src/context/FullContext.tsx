@@ -2,7 +2,6 @@ import React, { createContext, useState } from "react";
 
 import { ApiProvider } from "./ApiContext";
 import { AuthProvider } from "./AuthContext";
-import { NFCProvider } from "./NFCContext";
 import { SettingsProvider } from "./SettingsContext";
 
 // create type context
@@ -31,7 +30,7 @@ export const FullProvider = ({ children }: { children: React.ReactNode }) => {
       <AuthProvider>
         <ApiProvider>
           <SettingsProvider>
-            <NFCProvider>{children}</NFCProvider>
+            <>{children}</>
           </SettingsProvider>
         </ApiProvider>
       </AuthProvider>
