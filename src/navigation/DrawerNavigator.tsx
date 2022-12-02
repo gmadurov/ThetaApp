@@ -1,16 +1,16 @@
+import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { DrawerContentScrollView, DrawerItem, DrawerItemList, createDrawerNavigator } from "@react-navigation/drawer";
 import React, { useContext } from "react";
 
+import { Appbar } from "react-native-paper";
 import AuthContext from "../context/AuthContext";
-import LedenlijstScreen from "../screens/LedenlijstScreen";
-import ChatNavigator from "./ChatNavigator";
-import NewsPage from "../screens/NewsPage";
 // import WalletUpgrateScreen from "../screens/WalletUpgrateScreen";
 import { AuthenticatedStackParamsList } from "./AuthenticatedStack";
-import { DrawerActions, useNavigation } from "@react-navigation/native";
+import ChatNavigator from "./ChatNavigator";
+import LedenlijstScreen from "../screens/LedenlijstScreen";
+import NewsPage from "../screens/NewsPage";
 import PhotoAlbumScreen from "../screens/PhotoAlbumScreen";
 import { theme } from "../context/Theme";
-import { Appbar } from "react-native-paper";
 
 export type DrawerParamList = {
   "Spam/Frust": undefined;
@@ -103,6 +103,14 @@ const DrawerNavigator = () => {
               <Appbar.Content title="Ledenlijst" />
             </Appbar.Header>
           ),
+          // backgroundColor: GlobalStyles.colors.primary1,
+        }}
+      />
+      <Drawer.Screen
+        name="WalletUpgrade"
+        component={WalletUpgrade}
+        options={{
+          title: "WalletUpgrade",
           // backgroundColor: GlobalStyles.colors.primary1,
         }}
       />
