@@ -1,4 +1,4 @@
-import AuthContext, { FailedRequest, baseUrl } from "./AuthContext";
+import AuthContext, { FailedRequest } from "./AuthContext";
 import { AuthToken, AuthToken_decoded } from "../models/AuthToken";
 import React, { createContext, useContext } from "react";
 
@@ -69,35 +69,27 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
   } = useContext(AuthContext);
 
   async function returnAccessToken() {
-    // if (authTokens) {
+    // if (authTokens.access_token) {
     //   return authTokens?.access_token;
     // }
-    let tokens = (await JSON.parse(
-      (await AsyncStorage.getItem("authTokens")) as string
-    )) as AuthToken;
-
+    let tokens = JSON.parse((await AsyncStorage.getItem("authTokens")) as string) as AuthToken;
     return tokens?.access_token;
   }
 
   /** gets the refresh token and update the local state and local storage */
   async function refreshToken(authToken?: AuthToken): Promise<AuthToken> {
     if (authToken === undefined) {
-      authToken = (await JSON.parse(
-        (await AsyncStorage.getItem("authTokens")) as string
-      )) as AuthToken;
+      authToken = (await JSON.parse((await AsyncStorage.getItem("authTokens")) as string)) as AuthToken;
     }
-    
-    const { res, data } = await originalRequest<FailedRequest>(
-      `/login/refresh/`,
-      {
-        method: "POST",
-        headers: {
-          Accept: "*/*",
-          Authorization: authToken?.refresh_token,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+
+    const { res, data } = await originalRequest<FailedRequest>(`/login/refresh/`, {
+      method: "POST",
+      headers: {
+        Accept: "*/*",
+        Authorization: authToken?.refresh_token,
+        "Content-Type": "application/json",
+      },
+    });
     if (res?.status === 200) {
       const user = await ApiRequest<User>("/users/me/", {
         headers: {
@@ -119,21 +111,20 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
         access_token: jwtDecode(data.access_token as string),
       })); // if cycling refresh tokens
       setUser(user.data);
-      await AsyncStorage.setItem(
-        "authTokens",
-        JSON.stringify({
-          refresh_token: authToken.refresh_token,
-          user: user.data,
-          access_token: data.access_token,
-        } as AuthToken)
-      ); // if cycling refresh tokens
+      // await AsyncStorage.setItem(
+      //   "authTokens",
+      //   JSON.stringify({
+      //     refresh_token: authToken.refresh_token,
+      //     user: user.data,
+      //     access_token: data.access_token,
+      //   } as AuthToken)
+      // ); // if cycling refresh tokens
       return data as AuthToken;
     } else {
       // console.log(`Problem met de refresh token: ${res?.status}`);
       showMessage({
         message: "Refresh token expired",
-        description:
-          "Je hebt de app in te lang niet gebruikt, je woord uitgelogged",
+        description: "Je hebt de app in te lang niet gebruikt, je woord uitgelogged",
         type: "info",
         floating: true,
         hideStatusBar: true,
@@ -150,16 +141,8 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
     if (!authTokensDecoded?.access_token) {
       return await refreshToken();
     }
-    const isExpired = user
-      ? dayjs
-          .unix(authTokensDecoded.refresh_token.exp)
-          .diff(dayjs(), "minute") < 1
-      : false;
-    const isExpiredRefresh = authTokens
-      ? dayjs
-          .unix(authTokensDecoded.refresh_token.exp)
-          .diff(dayjs(), "minute") < 1
-      : true;
+    const isExpired = user ? dayjs.unix(authTokensDecoded.refresh_token.exp).diff(dayjs(), "minute") < 1 : false;
+    const isExpiredRefresh = authTokens ? dayjs.unix(authTokensDecoded.refresh_token.exp).diff(dayjs(), "minute") < 1 : true;
     if (isExpiredRefresh) {
       // Alert.alert("refresh token has expired, you were logged out");
       await logoutFunc();
@@ -204,7 +187,7 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
       };
     }
 
-    if (user) {
+    if (user.id) {
       const { res, data } = await originalRequest<TResponse>(url, config);
       // if (res?.status === 200) {
       // console.warn("request Failed", res?.status);
@@ -232,7 +215,7 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
     }
   ): Promise<{ res: Response; data: TResponse }> {
     await checkTokens();
-    if (user) {
+    if (user.id) {
       const { res, data } = await originalRequest<TResponse>(url, config);
       if (res?.status === 401) {
         // Alert.alert("", url, config);
@@ -273,7 +256,5 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
     refreshToken: refreshToken,
     baseUrl,
   };
-  return (
-    <ApiContext.Provider value={value_dic}>{children}</ApiContext.Provider>
-  );
+  return <ApiContext.Provider value={value_dic}>{children}</ApiContext.Provider>;
 };

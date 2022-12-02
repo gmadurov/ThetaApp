@@ -1,8 +1,7 @@
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
-import { Button } from "@rneui/themed";
-import { GlobalStyles } from "../../constants/styles";
 import React from "react";
+import { Button } from "react-native-paper";
 
 function LoadingOverlay({
   message,

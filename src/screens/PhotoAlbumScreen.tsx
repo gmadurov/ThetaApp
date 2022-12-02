@@ -11,9 +11,7 @@ import dayjs from "dayjs";
 type Props = NativeStackScreenProps<DrawerParamList, "PhotoAlbumScreen">;
 const PhotoAlbumScreen = ({ route, navigation }: Props) => {
   const { ApiRequest, user, baseUrl } = useContext(ApiContext);
-  const [photoAlbums, setPhotoAlbums] = useState<PhotoAlbum[]>(
-    [] as PhotoAlbum[]
-  );
+  const [photoAlbums, setPhotoAlbums] = useState<PhotoAlbum[]>([] as PhotoAlbum[]);
   const [next, setNext] = useState<string | undefined>(undefined);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [previous, setPrevious] = useState<string | undefined>(undefined);
@@ -22,9 +20,9 @@ const PhotoAlbumScreen = ({ route, navigation }: Props) => {
   const getObjects = async () => {
     setRefreshing(true);
     const { res, data } = await ApiRequest<PhotoAlbumResponse>(
-      `/photoalbums/${page || ordering ? "?" : ""}${
-        page ? "page=" + page : ""
-      }${ordering && page ? "&" : ""}${ordering ? "ordering=" + ordering : ""}`
+      `/photoalbums/${page || ordering ? "?" : ""}${page ? "page=" + page : ""}${ordering && page ? "&" : ""}${
+        ordering ? "ordering=" + ordering : ""
+      }`
     );
 
     setPhotoAlbums(() => data.results);
@@ -65,13 +63,13 @@ const PhotoAlbumScreen = ({ route, navigation }: Props) => {
           style={styles.card}
           mode={"elevated"}
           onPress={() => {
-              navigation.navigate("AuthenticatedStack", {
-                screen: "SinglePhotoAlbum",
-                params: {
-                  id: item.id,
-                },
-              });
-            }}
+            navigation.navigate("AuthenticatedStack", {
+              screen: "SinglePhotoAlbum",
+              params: {
+                id: item.id,
+              },
+            });
+          }}
         >
           {item.photos[0] && (
             <Card.Cover
@@ -83,10 +81,7 @@ const PhotoAlbumScreen = ({ route, navigation }: Props) => {
           <Card.Title
             title={item.title}
             subtitle={`Door ${item.author}, ${
-              item.date_edited
-                ? "voor het laatst geupdate op " +
-                  dayjs(item.date_edited).format("D MMM YYYY")
-                : ""
+              item.date_edited ? "voor het laatst geupdate op " + dayjs(item.date_edited).format("D MMM YYYY") : ""
             }`}
           />
           <Card.Content>
@@ -98,6 +93,9 @@ const PhotoAlbumScreen = ({ route, navigation }: Props) => {
       </>
     );
   };
+
+  
+
   return (
     <>
       <FlatList
@@ -130,10 +128,7 @@ const PhotoAlbumScreen = ({ route, navigation }: Props) => {
         ListFooterComponent={
           <>
             {next !== undefined && (
-              <Button
-                onPress={() => setPage(() => next)}
-                disabled={next === undefined}
-              >
+              <Button onPress={() => setPage(() => next)} disabled={next === undefined}>
                 next
               </Button>
             )}

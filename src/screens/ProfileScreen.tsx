@@ -3,33 +3,22 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import dayjs from "dayjs";
 import * as React from "react";
 import { useContext, useLayoutEffect, useState } from "react";
-import {
-  Animated,
-  Dimensions,
-  Image,
-  Linking,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { Avatar, Card, IconButton, List } from "react-native-paper";
+import { Animated, Dimensions, Image, Linking, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Appbar, Avatar, Card, IconButton, List } from "react-native-paper";
 import ApiContext from "../context/ApiContext";
 import AuthContext from "../context/AuthContext";
 import { Member } from "../models/Members";
 import { User } from "../models/Users";
 import { AuthenticatedStackParamsList } from "../navigation/AuthenticatedStack";
 import { downloadContact } from "./LedenlijstScreen";
+
+import { theme } from "../context/Theme";
 type UserMember = {
   user: User;
   member: Member;
 };
 
-type Props = NativeStackScreenProps<
-  AuthenticatedStackParamsList,
-  "ProfilePagina"
->;
+type Props = NativeStackScreenProps<AuthenticatedStackParamsList, "ProfilePagina">;
 function ProfileScreen({ route, navigation }: Props) {
   const { baseUrl, user } = useContext(AuthContext);
   const { ApiRequest } = useContext(ApiContext);
@@ -37,12 +26,8 @@ function ProfileScreen({ route, navigation }: Props) {
   const [refreshing, setRefreshing] = useState(false);
   const getUserMember = async () => {
     setRefreshing(true);
-    const { res: resMember, data: dataMember } = await ApiRequest<Member>(
-      `/members/${route.params?.id || user.id}/`
-    );
-    const { res: resUser, data: dataUser } = await ApiRequest<User>(
-      `/users/${route.params?.id || user.id}/`
-    );
+    const { res: resMember, data: dataMember } = await ApiRequest<Member>(`/members/${route.params?.id || user.id}/`);
+    const { res: resUser, data: dataUser } = await ApiRequest<User>(`/users/${route.params?.id || user.id}/`);
     if (resUser.status === 200 && resMember.status === 200) {
       setUserMember({ member: dataMember, user: dataUser });
     }
@@ -50,6 +35,20 @@ function ProfileScreen({ route, navigation }: Props) {
   };
   useLayoutEffect(() => {
     getUserMember();
+    navigation.setOptions({
+      header: ({ navigation }) => (
+        <Appbar.Header style={{ backgroundColor: theme.colors.primary }}>
+          {navigation.canGoBack() && (
+            <Appbar.BackAction
+              onPress={() => {
+                navigation.goBack();
+              }}
+            />
+          )}
+          <Appbar.Content title="Profile Page" />
+        </Appbar.Header>
+      ),
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [route.params?.id, user.id]);
 
@@ -67,22 +66,15 @@ function ProfileScreen({ route, navigation }: Props) {
               size={avatarSize}
             />
           ) : (
-            <Avatar.Text
-              size={avatarSize}
-              label={userMember.user?.name}
-              style={styles.userImage}
-            />
+            <Avatar.Text size={avatarSize} label={userMember.user?.name} style={styles.userImage} />
           )}
           <View style={styles.userNameRow}>
             <Text style={styles.userNameText}>
-              {userMember.member?.voornaam} {userMember.member?.tussenvoegsel}{" "}
-              {userMember.member?.achternaam}
+              {userMember.member?.voornaam} {userMember.member?.tussenvoegsel} {userMember.member?.achternaam}
             </Text>
           </View>
           <View style={styles.userBioRow}>
-            <Text style={styles.userBioText}>
-              {userMember.member?.opleiding}
-            </Text>
+            <Text style={styles.userBioText}>{userMember.member?.opleiding}</Text>
           </View>
         </View>
         <View style={styles.socialRow}>
@@ -91,77 +83,45 @@ function ProfileScreen({ route, navigation }: Props) {
               size={30}
               color="#56ACEE"
               icon="whatsapp"
-              onPress={() =>
-                Linking.openURL(
-                  `whatsapp://send?phone=${userMember.member?.telefoonnummer}`
-                )
-              }
+              onPress={() => Linking.openURL(`whatsapp://send?phone=${userMember.member?.telefoonnummer}`)}
             />
           </View>
           <View style={styles.socialIcon}>
-            <IconButton
-              size={30}
-              color="#56ACEE"
-              icon="account-plus"
-              onPress={() => downloadContact(userMember.member)}
-            />
+            <IconButton size={30} color="#56ACEE" icon="account-plus" onPress={() => downloadContact(userMember.member)} />
           </View>
           <View style={styles.socialIcon}>
             <IconButton
               size={30}
               color="green"
               icon="phone"
-              onPress={() =>
-                Linking.openURL(`tel:${userMember.member?.telefoonnummer}`)
-              }
+              onPress={() => Linking.openURL(`tel:${userMember.member?.telefoonnummer}`)}
             />
           </View>
         </View>
       </View>
     );
   };
-  const Counts = ({
-    count,
-    title,
-  }: {
-    count: string | number;
-    title: string;
-  }) => {
+  const Counts = ({ count, title }: { count: string | number; title: string }) => {
     return (
       <View>
-        <Animated.Text style={[styles.tabLabelText, { color: "black" }]}>
-          {count}
-        </Animated.Text>
-        <Animated.Text style={[styles.tabLabelNumber, { color: "black" }]}>
-          {title}
-        </Animated.Text>
+        <Animated.Text style={[styles.tabLabelText, { color: "black" }]}>{count}</Animated.Text>
+        <Animated.Text style={[styles.tabLabelNumber, { color: "black" }]}>{title}</Animated.Text>
       </View>
     );
   };
   return (
-    <ScrollView
-      style={styles.scroll}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={getUserMember} />
-      }
-    >
+    <ScrollView style={styles.scroll} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={getUserMember} />}>
       <View style={[styles.container]}>
         <View style={styles.cardContainer}>
           <RenderContactHeader />
           <View style={styles.socialRow}>
             <Counts count={userMember.user?.spam_count} title={"Spam Count"} />
             <View style={{ width: 10 }} />
-            <Counts
-              count={userMember.user?.frust_count}
-              title={"Frust Count"}
-            />
+            <Counts count={userMember.user?.frust_count} title={"Frust Count"} />
             <View style={{ width: 10 }} />
-            <Counts
-              count={userMember.user?.zuur.toPrecision(3)}
-              title={"Zuur"}
-            />
+            <Counts count={userMember.user?.zuur.toPrecision(3)} title={"Zuur"} />
           </View>
-          <View style={{marginTop: 30}}>
+          <View style={{ marginTop: 30 }}>
             <List.AccordionGroup>
               {/* left={()} */}
               <List.Accordion title="Ploegjes" id={1}>
@@ -184,9 +144,7 @@ function ProfileScreen({ route, navigation }: Props) {
                       <List.Item title={`Sectie: ${ploeg.ploeg.sectie}`} />
                       <List.Item title={`Niveau: ${ploeg.ploeg.niveau}`} />
                       <List.Item title={`Seizoen: ${ploeg.ploeg.seizoen}`} />
-                      {ploeg.ploeg.verhaal && (
-                        <List.Item title={`Verhaal: ${ploeg.ploeg.verhaal}`} />
-                      )}
+                      {ploeg.ploeg.verhaal && <List.Item title={`Verhaal: ${ploeg.ploeg.verhaal}`} />}
                       {/* for react native paper == v5 */}
                       {/* {ploeg.ploeg.foto && (
                     <List.Image source={{ uri: ploeg.ploeg.foto }} />
@@ -197,63 +155,45 @@ function ProfileScreen({ route, navigation }: Props) {
               </List.Accordion>
               <List.Accordion title="Commissies" id={2}>
                 <List.AccordionGroup>
-                  {userMember.member?.commissielidmaatschappen.map(
-                    (commissie, i) => (
-                      <List.Accordion
-                        title={`${commissie.functie} in ${commissie.commissie.afkorting}`}
-                        id={`${commissie.commissie.id} ${i}`}
-                        key={i}
-                        left={(props) => <View style={{ width: 30 }} />}
-                      >
-                        <List.Item
-                          // {dayjs(item.pub_date).format("D-M-YYYY | hh:mmA")}
-                          title={`${commissie.commissie.naam}`}
-                        />
-                        <List.Item
-                          // {dayjs(item.pub_date).format("D-M-YYYY | hh:mmA")}
-                          title={`Van ${dayjs(commissie.begindatum).format(
-                            "MMM YYYY"
-                          )} ${
-                            commissie.einddatum
-                              ? "tot " +
-                                dayjs(commissie.einddatum).format("MMM YYYY")
-                              : ""
-                          }`}
-                        />
-                      </List.Accordion>
-                    )
-                  )}
+                  {userMember.member?.commissielidmaatschappen.map((commissie, i) => (
+                    <List.Accordion
+                      title={`${commissie.functie} in ${commissie.commissie.afkorting}`}
+                      id={`${commissie.commissie.id} ${i}`}
+                      key={i}
+                      left={(props) => <View style={{ width: 30 }} />}
+                    >
+                      <List.Item
+                        // {dayjs(item.pub_date).format("D-M-YYYY | hh:mmA")}
+                        title={`${commissie.commissie.naam}`}
+                      />
+                      <List.Item
+                        // {dayjs(item.pub_date).format("D-M-YYYY | hh:mmA")}
+                        title={`Van ${dayjs(commissie.begindatum).format("MMM YYYY")} ${
+                          commissie.einddatum ? "tot " + dayjs(commissie.einddatum).format("MMM YYYY") : ""
+                        }`}
+                      />
+                    </List.Accordion>
+                  ))}
                 </List.AccordionGroup>
               </List.Accordion>
               {/* Bestuurschappen */}
               {userMember.member?.bestuurslidmaatschappen.length > 0 && (
                 <>
-                  {userMember.member?.bestuurslidmaatschappen.map(
-                    (bestuur, i) => (
-                      <List.Accordion
-                        title={`${bestuur.bestuur.naam} Bestuur`}
-                        id={`${bestuur.bestuur.id} ${i}`}
-                        key={i}
-                      >
-                        <List.Item
-                          // {dayjs(item.pub_date).format("D-M-YYYY | hh:mmA")}
-                          title={`${bestuur.functie}`}
-                        />
-                        <List.Item
-                          title={`Vanaf ${dayjs(
-                            bestuur.bestuur.installatiedatum
-                          ).format("MMMM YYYY")} ${
-                            bestuur.bestuur.dechargedatum
-                              ? "tot " +
-                                dayjs(bestuur.bestuur.dechargedatum).format(
-                                  "MMMM YYYY"
-                                )
-                              : ""
-                          }`}
-                        />
-                      </List.Accordion>
-                    )
-                  )}
+                  {userMember.member?.bestuurslidmaatschappen.map((bestuur, i) => (
+                    <List.Accordion title={`${bestuur.bestuur.naam} Bestuur`} id={`${bestuur.bestuur.id} ${i}`} key={i}>
+                      <List.Item
+                        // {dayjs(item.pub_date).format("D-M-YYYY | hh:mmA")}
+                        title={`${bestuur.functie}`}
+                      />
+                      <List.Item
+                        title={`Vanaf ${dayjs(bestuur.bestuur.installatiedatum).format("MMMM YYYY")} ${
+                          bestuur.bestuur.dechargedatum
+                            ? "tot " + dayjs(bestuur.bestuur.dechargedatum).format("MMMM YYYY")
+                            : ""
+                        }`}
+                      />
+                    </List.Accordion>
+                  ))}
                 </>
               )}
             </List.AccordionGroup>
