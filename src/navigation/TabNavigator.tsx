@@ -9,7 +9,7 @@ import FullContext from "../context/FullContext";
 import LedenlijstScreen from "../screens/LedenlijstScreen";
 import LoginScreen from "../screens/LoginScreen";
 import NewsPage from "../screens/NewsPage";
-import WalletUpgrateScreen from "../screens/WalletUpgrateScreen";
+// import WalletUpgrateScreen from "../screens/WalletUpgrateScreen";
 
 const Tab = createBottomTabNavigator();
 
