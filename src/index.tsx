@@ -15,7 +15,7 @@ import { FullProvider } from "./context/FullContext";
 import { GlobalStyles } from "./constants/styles";
 import LoginScreen from "./screens/LoginScreen";
 import { NavigationContainer } from "@react-navigation/native";
-import { MD3LightTheme as DefaultTheme, Provider as PaperProvider, useTheme } from "react-native-paper";
+import { Provider as PaperProvider, useTheme } from "react-native-paper";
 import { StatusBar } from "expo-status-bar";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import jwt_decode from "jwt-decode";

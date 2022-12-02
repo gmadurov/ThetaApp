@@ -106,14 +106,6 @@ const DrawerNavigator = () => {
           // backgroundColor: GlobalStyles.colors.primary1,
         }}
       />
-      <Drawer.Screen
-        name="WalletUpgrade"
-        component={WalletUpgrade}
-        options={{
-          title: "WalletUpgrade",
-          // backgroundColor: GlobalStyles.colors.primary1,
-        }}
-      />
       {/* <Drawer.Screen
         name="WalletUpgrateScreen"
         component={WalletUpgrateScreen}
