@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-
 
 export type AppParamsList = {
   Login: undefined;
@@ -18,3 +18,14 @@ export type ChatParamList = {
 };
 
 export const Tab = createBottomTabNavigator<ChatParamList>();
+
+export type DrawerParamList = {
+  "Spam/Frust": undefined;
+  LoginScreen: undefined;
+  NewsPage: undefined;
+  WalletUpgrateScreen: undefined;
+  LedenlijstScreen: undefined;
+  PhotoAlbumScreen: undefined;
+  // [key: string]: undefined | object; //remove if it doesnt cause any other ts-errors
+};
+export const Drawer = createDrawerNavigator<DrawerParamList>();

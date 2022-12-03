@@ -1,37 +1,24 @@
-import React, { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { Photo, PhotoAlbum, PhotoAlbumResponse } from "../models/PhotoAlbulms";
-import ApiContext from "../context/ApiContext";
-import dayjs from "dayjs";
-import { AuthenticatedStackParamsList } from "../navigation/AuthenticatedStack";
+import React, { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
+  Dimensions,
+  FlatList,
+  GestureResponderEvent,
+  Image,
+  ScrollView,
+  Share,
+  StyleSheet,
   TouchableOpacity,
   View,
-  Text,
-  Image,
-  FlatList,
-  Dimensions,
-  StyleSheet,
-  ScrollView,
   ViewToken,
-  GestureResponderEvent,
-  Share,
-  SafeAreaView,
 } from "react-native";
-import {
-  ActivityIndicator,
-  Appbar,
-  Divider,
-  Menu,
-  Modal,
-  Portal,
-  Provider,
-  ThemeProvider,
-  TouchableRipple,
-} from "react-native-paper";
-import { Ionicons } from "@expo/vector-icons";
+import { Appbar, Menu, Modal, Portal, Provider, Text, TouchableRipple } from "react-native-paper";
+import ApiContext from "../context/ApiContext";
+import { Photo, PhotoAlbum } from "../models/PhotoAlbulms";
+import { AuthenticatedStackParamsList } from "../navigation/AuthenticatedStack";
 // import Carousel, { Pagination } from 'react-native-snap-carousel';
-import ReactNativeZoomableView from "@dudigital/react-native-zoomable-view/src/ReactNativeZoomableView";
+import ReactNativeZoomableView from "@openspacelabs/react-native-zoomable-view/src/ReactNativeZoomableView";
 import { showMessage } from "react-native-flash-message";
 import { theme } from "../context/Theme";
 
@@ -41,7 +28,8 @@ type ContextualMenuCoord = { x: number; y: number };
 type MenuVisibility = {
   [key: string]: boolean | undefined;
 };
-
+const SPACING = 10;
+const THUMB_SIZE = 80;
 const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
   const { ApiRequest, user, baseUrl } = useContext(ApiContext);
   const [contextualMenuCoord, setContextualMenuCoor] = useState<ContextualMenuCoord>({ x: 0, y: 0 });
@@ -52,8 +40,7 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
   const [selectedPhotoId, setSelectedPhotoId] = useState<string | number>(0);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
-  const SPACING = 10;
-  const THUMB_SIZE = 80;
+
   const getObjects = async () => {
     setRefreshing(true);
     const { res, data } = await ApiRequest<PhotoAlbum>(`/photoalbums/${route.params.id}/`);
@@ -66,7 +53,7 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
       x: nativeEvent.pageX,
       y: nativeEvent.pageY,
     });
-    setVisible({ menu3: true });
+    setVisible({ ShareMenu: true });
   };
   useEffect(() => {
     if (user?.id) {
@@ -151,13 +138,7 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
   return (
     <>
       <Portal>
-        <Modal
-          // animationType="slide"
-          // transparent={true}
-          style={styles.modal}
-          visible={_getModal()}
-          onDismiss={() => _toggleModal()}
-        >
+        <Modal style={styles.modal} visible={_getModal()} onDismiss={() => _toggleModal()}>
           <Ionicons
             name="ellipsis-vertical-outline"
             size={45}
@@ -181,7 +162,10 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{
               justifyContent: "space-between",
+              alignItems: "center",
+              backgroundColor: "transparent",
             }}
+            extraData={selectedPhotoId}
             getItemLayout={(data, index) => ({ length: width, offset: width * index, index })}
             initialScrollIndex={indexSelected}
             keyExtractor={(item) => item.id.toString()}
@@ -191,18 +175,18 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
             onScrollToIndexFailed={() => {
               flatListRef_Modal?.current?.scrollToEnd();
             }}
-            // onViewableItemsChanged={useCallback(({ viewableItems }: { viewableItems: ViewToken[] }) => {
-            //   setIndexSelected(viewableItems[0]?.index || 0);
-            //   setSelectedPhotoId(viewableItems[0]?.item.id);
-            //   flatListRef_thumb?.current?.scrollToIndex({
-            //     index: viewableItems[0]?.index as number,
-            //     animated: true,
-            //     viewPosition: 0.5,
-            //   });
-            // }, [])}
+            onViewableItemsChanged={useCallback(({ viewableItems }: { viewableItems: ViewToken[] }) => {
+              setIndexSelected(viewableItems[0]?.index || 0);
+              setSelectedPhotoId(viewableItems[0]?.item.id);
+              flatListRef_thumb?.current?.scrollToIndex({
+                index: viewableItems[0]?.index as number,
+                animated: true,
+                viewPosition: 0.5,
+              });
+            }, [])}
             renderItem={({ item: object, index }) => (
-              <View key={`ViewPhoto-${object.id}-${index}`}>
-                <ReactNativeZoomableView
+              <View key={`ViewPhoto-${object.id}-${index}`} style={{ backgroundColor: "transparent" }}>
+                {/* <ReactNativeZoomableView
                   zoomEnabled={true}
                   maxZoom={1.5}
                   minZoom={0.5}
@@ -211,40 +195,35 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
                   bindToBorders={true}
                   // onZoomAfter={this.logOutZoomState}
                   style={{ width: width, height: height }}
-                >
-                  <Menu visible={_getVisible("menu3")} onDismiss={_toggleMenu("menu3")} anchor={contextualMenuCoord}>
-                    <Menu.Item
-                      onPress={() => {
-                        Share.share({
-                          title: `E.S.R Theta: ${object.id}`,
-                          // message: baseUrl.slice(0, -3) + object.url,
-                          url: baseUrl.slice(0, -3) + object.url,
-                        })
-                          .then((err) =>
-                            showMessage({ message: "Shared", type: "success", duration: 1500, icon: "success" })
-                          )
-                          .catch((err) =>
-                            showMessage({ message: "Failed to Share", type: "danger", duration: 1500, icon: "danger" })
-                          );
-                      }}
-                      title="Share"
-                    />
-                    <Menu.Item onPress={() => {}} title="Item 2" />
-                    <View style={{ height: "1px", backgroundColor: theme.colors.backdrop }} />
-                    <Menu.Item onPress={() => {}} title="Item 3" disabled />
-                  </Menu>
-
-                  <Image
-                    // onLoadStart={() => _toggleLoading(object.id)}
-                    // onLoadEnd={() => _toggleLoading(object.id)}
-                    key={`photo-${object.id}-${index}`}
-                    source={{
-                      uri: baseUrl.slice(0, -3) + object.url,
+                > */}
+                <Menu visible={_getVisible("ShareMenu")} onDismiss={_toggleMenu("ShareMenu")} anchor={contextualMenuCoord}>
+                  <Menu.Item
+                    onPress={() => {
+                      Share.share({
+                        title: `E.S.R Theta: ${object.id}`,
+                        // message: baseUrl.slice(0, -3) + object.url,
+                        url: baseUrl.slice(0, -3) + object.url,
+                      })
+                        .then((err) => showMessage({ message: "Shared", type: "success", duration: 1500, icon: "success" }))
+                        .catch((err) =>
+                          showMessage({ message: "Failed to Share", type: "danger", duration: 1500, icon: "danger" })
+                        );
                     }}
-                    defaultSource={require("../assets/loadingBoat.jpg")}
-                    style={{ width: width, height: height, resizeMode: "center" }}
+                    title="Share"
                   />
-                </ReactNativeZoomableView>
+                </Menu>
+
+                <Image
+                  // onLoadStart={() => _toggleLoading(object.id)}
+                  // onLoadEnd={() => _toggleLoading(object.id)}
+                  key={`photo-${object.id}-${index}`}
+                  source={{
+                    uri: baseUrl.slice(0, -3) + object.url,
+                  }}
+                  defaultSource={require("../assets/loadingBoat.jpg")}
+                  style={{ width: width, height: height, resizeMode: "center" }}
+                />
+                {/* </ReactNativeZoomableView> */}
               </View>
             )}
           />
@@ -256,8 +235,8 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{
               paddingHorizontal: SPACING,
-              position: "absolute", bottom: 10
             }}
+            extraData={selectedPhotoId}
             initialScrollIndex={indexSelected}
             keyExtractor={(item) => item.id.toString()}
             onScrollToIndexFailed={() => {
@@ -271,14 +250,13 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
                 }}
               >
                 <Image
-                  style={{
-                    width: THUMB_SIZE,
-                    height: THUMB_SIZE,
-                    marginRight: SPACING,
-                    borderRadius: 16,
-                    borderWidth: index === indexSelected ? 4 : 0.75,
-                    borderColor: index === indexSelected ? "orange" : "white",
-                  }}
+                  style={[
+                    styles.thumbNail,
+                    {
+                      borderWidth: index === indexSelected ? 4 : 0.75,
+                      borderColor: index === indexSelected ? "orange" : "white",
+                    },
+                  ]}
                   defaultSource={require("../assets/loadingBoat.jpg")}
                   source={{ uri: baseUrl.slice(0, -3) + item.url }}
                 />
@@ -301,10 +279,18 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
             >
               <Image
                 source={{ uri: baseUrl.slice(0, -3) + object.thumb }}
-                defaultSource={require("../assets/loadingBoat.jpg")}
                 style={[styles.image, { backgroundColor: colors[Math.floor(Math.random() * colors.length)] }]}
               />
             </TouchableRipple>
+          )}
+          ListEmptyComponent={() => (
+            <View style={styles.NoFotosView}>
+              <Text style={styles.NoFotosText}>
+                Je woord geprankt! Er zijn geen foto's in deze album!
+                {"\n\n"}
+                Je moet wss een foto toevoegen of een reload doen.
+              </Text>
+            </View>
           )}
           keyExtractor={(item) => item.id.toString()}
           showsVerticalScrollIndicator={false}
@@ -352,12 +338,20 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
   },
   imageContainer: {
-    width: width / 2,
-    height: height / 3,
+    // width: width / 2,
+    // height: height / 3,
     // overflow: "hidden",
   },
   modal: {
     justifyContent: "center",
     alignItems: "center",
   },
+  thumbNail: {
+    width: THUMB_SIZE,
+    height: THUMB_SIZE,
+    marginRight: SPACING,
+    borderRadius: 16,
+  },
+  NoFotosText: { fontSize: 20, fontWeight: "bold", textAlign: "center" },
+  NoFotosView: { flex: 1, justifyContent: "center", alignItems: "center", paddingTop: height / 3 },
 });
