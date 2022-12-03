@@ -171,7 +171,9 @@ const NewsPage = ({ route, navigation }: Props) => {
 export default NewsPage;
 
 const styles = StyleSheet.create({
-  container: {},
+  container: {
+    paddingBottom: 50,
+  },
   card: {
     margin: 4,
     paddingBottom: 9,

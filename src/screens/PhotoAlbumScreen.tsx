@@ -104,7 +104,7 @@ const PhotoAlbumScreen = ({ route, navigation }: Props) => {
         keyExtractor={(item) => item.id.toString()}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
-        // contentContainerStyle={styles.container}
+        contentContainerStyle={styles.container}
         refreshing={refreshing}
         onRefresh={async () => {
           setRefreshing(true);
@@ -146,4 +146,7 @@ const styles = StyleSheet.create({
     margin: 4,
     paddingBottom: 9,
   },
+  container:{
+    paddingBottom: 50
+  }
 });
