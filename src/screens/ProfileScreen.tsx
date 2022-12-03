@@ -89,7 +89,12 @@ function ProfileScreen({ route, navigation }: Props) {
             />
           </View>
           <View style={styles.socialIcon}>
-            <IconButton size={30} iconColor="#56ACEE" icon="account-plus" onPress={() => downloadContact(userMember.member)} />
+            <IconButton
+              size={30}
+              iconColor="#56ACEE"
+              icon="account-plus"
+              onPress={() => downloadContact(userMember.member)}
+            />
           </View>
           <View style={styles.socialIcon}>
             <IconButton
@@ -126,59 +131,63 @@ function ProfileScreen({ route, navigation }: Props) {
           <View style={{ marginTop: 30 }}>
             <List.AccordionGroup>
               {/* left={()} */}
-              <List.Accordion title="Ploegjes" id={1}>
-                <List.AccordionGroup>
-                  {userMember.member?.ploeglidmaatschappen.map((ploeg, i) => (
-                    <List.Accordion
-                      key={"pleog: " + i}
-                      title={`${
-                        ploeg.functie === "C"
-                          ? "Coach"
-                          : ploeg.functie === "R"
-                          ? "Roeier"
-                          : ploeg.functie === "S"
-                          ? "Stuur"
-                          : ploeg.functie
-                      } in ${ploeg.ploeg.naam}`}
-                      id={ploeg.ploeg.id}
-                      left={(props) => <View style={{ width: 30 }} />}
-                    >
-                      <List.Item title={`Geslacht: ${ploeg.ploeg.geslacht}`} />
-                      <List.Item title={`Sectie: ${ploeg.ploeg.sectie}`} />
-                      <List.Item title={`Niveau: ${ploeg.ploeg.niveau}`} />
-                      <List.Item title={`Seizoen: ${ploeg.ploeg.seizoen}`} />
-                      {ploeg.ploeg.verhaal && <List.Item title={`Verhaal: ${ploeg.ploeg.verhaal}`} />}
-                      {/* for react native paper == v5 */}
-                      {/* {ploeg.ploeg.foto && (
+              {userMember.member?.ploeglidmaatschappen.length > 0 && (
+                <List.Accordion title="Ploegjes" id={1}>
+                  <List.AccordionGroup>
+                    {userMember.member?.ploeglidmaatschappen.map((ploeg, i) => (
+                      <List.Accordion
+                        key={"pleog: " + i}
+                        title={`${
+                          ploeg.functie === "C"
+                            ? "Coach"
+                            : ploeg.functie === "R"
+                            ? "Roeier"
+                            : ploeg.functie === "S"
+                            ? "Stuur"
+                            : ploeg.functie
+                        } in ${ploeg.ploeg.naam}`}
+                        id={ploeg.ploeg.id}
+                        left={(props) => <View style={{ width: 30 }} />}
+                      >
+                        <List.Item title={`Geslacht: ${ploeg.ploeg.geslacht}`} />
+                        <List.Item title={`Sectie: ${ploeg.ploeg.sectie}`} />
+                        <List.Item title={`Niveau: ${ploeg.ploeg.niveau}`} />
+                        <List.Item title={`Seizoen: ${ploeg.ploeg.seizoen}`} />
+                        {ploeg.ploeg.verhaal && <List.Item title={`Verhaal: ${ploeg.ploeg.verhaal}`} />}
+                        {/* for react native paper == v5 */}
+                        {/* {ploeg.ploeg.foto && (
                     <List.Image source={{ uri: ploeg.ploeg.foto }} />
                   )} */}
-                    </List.Accordion>
-                  ))}
-                </List.AccordionGroup>
-              </List.Accordion>
-              <List.Accordion title="Commissies" id={2}>
-                <List.AccordionGroup>
-                  {userMember.member?.commissielidmaatschappen.map((commissie, i) => (
-                    <List.Accordion
-                      title={`${commissie.functie} in ${commissie.commissie.afkorting}`}
-                      id={`${commissie.commissie.id} ${i}`}
-                      key={"commisie" + i}
-                      left={(props) => <View style={{ width: 30 }} />}
-                    >
-                      <List.Item
-                        // {dayjs(item.pub_date).format("D-M-YYYY | hh:mmA")}
-                        title={`${commissie.commissie.naam}`}
-                      />
-                      <List.Item
-                        // {dayjs(item.pub_date).format("D-M-YYYY | hh:mmA")}
-                        title={`Van ${dayjs(commissie.begindatum).format("MMM YYYY")} ${
-                          commissie.einddatum ? "tot " + dayjs(commissie.einddatum).format("MMM YYYY") : ""
-                        }`}
-                      />
-                    </List.Accordion>
-                  ))}
-                </List.AccordionGroup>
-              </List.Accordion>
+                      </List.Accordion>
+                    ))}
+                  </List.AccordionGroup>
+                </List.Accordion>
+              )}
+              {userMember.member?.commissielidmaatschappen.length > 0 && (
+                <List.Accordion title="Commissies" id={2}>
+                  <List.AccordionGroup>
+                    {userMember.member?.commissielidmaatschappen.map((commissie, i) => (
+                      <List.Accordion
+                        title={`${commissie.functie} in ${commissie.commissie.afkorting}`}
+                        id={`${commissie.commissie.id} ${i}`}
+                        key={"commisie" + i}
+                        left={(props) => <View style={{ width: 30 }} />}
+                      >
+                        <List.Item
+                          // {dayjs(item.pub_date).format("D-M-YYYY | hh:mmA")}
+                          title={`${commissie.commissie.naam}`}
+                        />
+                        <List.Item
+                          // {dayjs(item.pub_date).format("D-M-YYYY | hh:mmA")}
+                          title={`Van ${dayjs(commissie.begindatum).format("MMM YYYY")} ${
+                            commissie.einddatum ? "tot " + dayjs(commissie.einddatum).format("MMM YYYY") : ""
+                          }`}
+                        />
+                      </List.Accordion>
+                    ))}
+                  </List.AccordionGroup>
+                </List.Accordion>
+              )}
               {/* Bestuurschappen */}
               {userMember.member?.bestuurslidmaatschappen.length > 0 && (
                 <>
