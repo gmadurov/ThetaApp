@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import * as MediaLibrary from "expo-media-library";
 import React, { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   Dimensions,
@@ -11,14 +12,14 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
-  ViewToken,
+  ViewToken
 } from "react-native";
+
 import { Appbar, Menu, Modal, Portal, Provider, Text, TouchableRipple } from "react-native-paper";
 import ApiContext from "../context/ApiContext";
 import { Photo, PhotoAlbum } from "../models/PhotoAlbulms";
 import { AuthenticatedStackParamsList } from "../navigation/AuthenticatedStack";
 // import Carousel, { Pagination } from 'react-native-snap-carousel';
-import ReactNativeZoomableView from "@openspacelabs/react-native-zoomable-view/src/ReactNativeZoomableView";
 import { showMessage } from "react-native-flash-message";
 import { theme } from "../context/Theme";
 
@@ -32,6 +33,7 @@ const SPACING = 10;
 const THUMB_SIZE = 80;
 const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
   const { ApiRequest, user, baseUrl } = useContext(ApiContext);
+  const [status, requestPermission] = MediaLibrary.usePermissions();
   const [contextualMenuCoord, setContextualMenuCoor] = useState<ContextualMenuCoord>({ x: 0, y: 0 });
   const [visible, setVisible] = React.useState<MenuVisibility>({});
   const [photoAlbum, setPhotoAlbum] = useState<PhotoAlbum>({} as PhotoAlbum);
@@ -40,21 +42,41 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
   const [selectedPhotoId, setSelectedPhotoId] = useState<string | number>(0);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
-
   const getObjects = async () => {
     setRefreshing(true);
     const { res, data } = await ApiRequest<PhotoAlbum>(`/photoalbums/${route.params.id}/`);
     setPhotoAlbum(() => data);
     setRefreshing(false);
   };
-  const _handleLongPress = (event: GestureResponderEvent) => {
+  const _handleLongPress = (event: GestureResponderEvent, name: string) => {
     const { nativeEvent } = event;
     setContextualMenuCoor({
       x: nativeEvent.pageX,
       y: nativeEvent.pageY,
     });
-    setVisible({ ShareMenu: true });
+    setVisible({ [name]: true });
   };
+  const savePhoto = async (object: Photo) => {
+    if (status?.status !== "denied") {
+      //TODO: see if you can make an album with the name E.S.R. Theta and save all the fotos to it
+      await MediaLibrary.saveToLibraryAsync(baseUrl.slice(0, -3) + object.url);
+      showMessage({
+        message: "Photo saved",
+        type: "success",
+        icon: "success",
+        floating: true,
+      });
+    } else {
+      await requestPermission();
+      showMessage({
+        message: "Photo not saved",
+        type: "danger",
+        icon: "danger",
+        floating: true,
+      });
+    }
+  };
+
   useEffect(() => {
     if (user?.id) {
       getObjects();
@@ -140,13 +162,6 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
       <Portal>
         <Modal style={styles.modal} visible={_getModal()} onDismiss={() => _toggleModal()}>
           <Ionicons
-            name="ellipsis-vertical-outline"
-            size={45}
-            color="orange"
-            style={{ zIndex: 10, top: 10, right: 60, position: "absolute" }}
-            onPress={_handleLongPress}
-          />
-          <Ionicons
             name="close"
             size={50}
             color="orange"
@@ -196,7 +211,18 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
                   // onZoomAfter={this.logOutZoomState}
                   style={{ width: width, height: height }}
                 > */}
-                <Menu visible={_getVisible("ShareMenu")} onDismiss={_toggleMenu("ShareMenu")} anchor={contextualMenuCoord}>
+                <Ionicons
+                  name="ellipsis-vertical-outline"
+                  size={45}
+                  color="orange"
+                  style={{ zIndex: 10, top: 50, right: 60, position: "absolute" }}
+                  onPress={(e) => _handleLongPress(e, `ShareMenu-${object.id}-${index}`)}
+                />
+                <Menu
+                  visible={_getVisible(`ShareMenu-${object.id}-${index}`)}
+                  onDismiss={_toggleMenu(`ShareMenu-${object.id}-${index}`)}
+                  anchor={contextualMenuCoord}
+                >
                   <Menu.Item
                     onPress={() => {
                       Share.share({
@@ -210,6 +236,12 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
                         );
                     }}
                     title="Share"
+                  />
+                  <Menu.Item
+                    onPress={async () => {
+                      await savePhoto(object);
+                    }}
+                    title="Download"
                   />
                 </Menu>
 

@@ -115,6 +115,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     const res = await fetch(urlFetch, config);
     const data = await res.json();
+    // console.log(data);
     if (res?.status === 401) {
       await logoutFunc();
     } else if (res?.status !== 200) {
