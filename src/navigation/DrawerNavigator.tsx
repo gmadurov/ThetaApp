@@ -15,7 +15,7 @@ const DrawerNavigator = () => {
   const { user, logoutFunc } = useContext(AuthContext);
   return (
     <Drawer.Navigator
-      // initialRouteName="NewsPage"
+      initialRouteName="NewsPage"
       id="DrawerStack"
       // screenOptions={{  headerStyle: { backgroundColor: "#351401" },//   headerTintColor: "white",//   sceneContainerStyle: { backgroundColor: "#3f2f25" },//   drawerContentStyle: { backgroundColor: "#351401" },//   drawerInactiveTintColor: "white",//   drawerActiveTintColor: "#351401",    //   drawerActiveBackgroundColor: "#e4baa1",// }}
       drawerContent={(props: DrawerContentComponentProps) => (
@@ -35,6 +35,13 @@ const DrawerNavigator = () => {
       )}
     >
       <Drawer.Screen
+        name="NewsPage"
+        component={NewsPage}
+        options={{
+          title: "Nieuws",
+        }}
+      />
+      <Drawer.Screen
         name="PhotoAlbumScreen"
         component={PhotoAlbumScreen}
         options={{
@@ -52,13 +59,6 @@ const DrawerNavigator = () => {
               <Appbar.Content title="Foto Albums" />
             </Appbar.Header>
           ),
-        }}
-      />
-      <Drawer.Screen
-        name="NewsPage"
-        component={NewsPage}
-        options={{
-          title: "Nieuws",
         }}
       />
       <Drawer.Screen
