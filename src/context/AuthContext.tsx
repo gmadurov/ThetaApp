@@ -40,7 +40,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   /**this function is simply to wake up the backend when working with heroku */
   const [baseUrl, setBaseUrl] = useState<string>("");
   // console.log("baseUrl", baseUrl);
-  console.log("authTokens43", authTokens.refresh_token);
   useLayoutEffect(() => {
     async () => {
       let url = await AsyncStorage.getItem("baseUrl");
@@ -100,7 +99,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   async function logoutFunc() {
-    console.log("logoutFunc");
     await AsyncStorage.removeItem("authTokens");
     setUser(() => ({} as User));
     setAuthTokens(() => ({} as AuthToken));

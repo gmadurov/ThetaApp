@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 import Button from "../ui/Button";
-import { GlobalStyles } from "../../constants/styles";
+import { theme } from "../../context/Theme";
 import Input from "../ui/Input";
 
 function AuthContent({
@@ -115,9 +115,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 32,
     padding: 16,
     borderRadius: 8,
-    backgroundColor: GlobalStyles.colors.primary2,
+    backgroundColor: theme.colors.primary2,
     elevation: 2,
-    shadowColor: GlobalStyles.colors.shadowColor,
+    shadowColor: theme.colors.shadowColor,
     shadowOffset: { width: 1, height: 1 },
     shadowOpacity: 0.35,
     shadowRadius: 4,

@@ -103,7 +103,7 @@ const DrawerNavigator = () => {
               <Appbar.Content title="Ledenlijst" />
             </Appbar.Header>
           ),
-          // backgroundColor: GlobalStyles.colors.primary1,
+          // backgroundColor: theme.colors.primary1,
         }}
       />
       {/* <Drawer.Screen
@@ -111,7 +111,7 @@ const DrawerNavigator = () => {
         component={WalletUpgrateScreen}
         options={{
           title: "Wallet opwaderen ",
-          // backgroundColor: GlobalStyles.colors.primary1,
+          // backgroundColor: theme.colors.primary1,
         }}
       /> */}
     </Drawer.Navigator>

@@ -1,12 +1,12 @@
 import {
-  GestureResponderEvent,
   Pressable,
   StyleSheet,
   Text,
-  View,
+  View
 } from "react-native";
 
-import { GlobalStyles } from "../../constants/styles";
+import { theme } from "../../context/Theme";
+
 import React from "react";
 
 function FlatButton({
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     textAlign: "center",
-    color: GlobalStyles.colors.primary1,
-    backgroundColor: GlobalStyles.colors.primary5,
+    color: theme.colors.primary1,
+    backgroundColor: theme.colors.primary5,
   },
 });

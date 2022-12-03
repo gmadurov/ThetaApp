@@ -1,12 +1,9 @@
-import { View, Text } from "react-native";
-import React from "react";
-import { GlobalStyles } from "../constants/styles";
-import ProfileScreen from "../screens/ProfileScreen";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Appbar } from "react-native-paper";
+import React from "react";
+import { theme } from "../context/Theme";
 import PdfScreen from "../screens/PdfScreen";
 import PhotoAlbumScreen_single from "../screens/PhotoAlbumScreen_single";
-import { theme } from "../context/Theme";
+import ProfileScreen from "../screens/ProfileScreen";
 
 export type AuthenticatedStackParamsList = {
   ProfilePagina: { id: number } | undefined;

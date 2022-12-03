@@ -9,19 +9,11 @@ import TokenInfo, { AuthToken, AuthToken_decoded } from "./models/AuthToken";
 
 import ApiContext from "./context/ApiContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import AuthContext from "./context/AuthContext";
-import DrawerNavigator from "./navigation/DrawerNavigator";
 import { FullProvider } from "./context/FullContext";
-import { GlobalStyles } from "./constants/styles";
-import LoginScreen from "./screens/LoginScreen";
 import { NavigationContainer } from "@react-navigation/native";
 import { Provider as PaperProvider, useTheme } from "react-native-paper";
 import { StatusBar } from "expo-status-bar";
 import jwt_decode from "jwt-decode";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import TabNavigator from "./navigation/TabNavigator";
-import ProfileScreen from "./screens/ProfileScreen";
-import AuthenticatedStack from "./navigation/AuthenticatedStack";
 import { useAppTheme } from "./context/Theme";
 import { Navigation } from "./navigation/Navigation";
 import { User } from "./models/Users";
@@ -32,21 +24,13 @@ function Root() {
   useLayoutEffect(() => {
     async function fetchToken() {
       const storedTokens = JSON.parse((await AsyncStorage.getItem("authTokens")) as string) as AuthToken;
-      // console.log("index 111", JSON.parse(storedTokens || "{}"));
-      // await AsyncStorage.clear()
-      const allkeys = await AsyncStorage.getAllKeys();
-      console.log(allkeys);
-
       if (storedTokens) {
         setUser(storedTokens.user);
         if ((jwt_decode(storedTokens.access_token as string) as TokenInfo).exp < Date.now()) {
           setIsTryingLogin(false);
-          setAuthTokens(storedTokens);
-          setAuthTokensDecoded({
-            access_token: jwt_decode(storedTokens.access_token as string),
-            user: storedTokens.user as User,
-            refresh_token: jwt_decode(storedTokens.refresh_token as string),
-          });
+        }
+        if ((jwt_decode(storedTokens.refresh_token as string) as TokenInfo).exp < Date.now()) {
+          await refreshToken(storedTokens);
         }
         showMessage({
           message: `Authentication woord refreshed`,

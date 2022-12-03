@@ -3,10 +3,11 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View,
+  View
 } from "react-native";
 
-import { GlobalStyles } from "../../constants/styles";
+import { theme } from "../../context/Theme";
+
 import React from "react";
 
 function Input({
@@ -48,20 +49,20 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   label: {
-    color: GlobalStyles.colors.textColorLight,
+    color: theme.colors.textColorLight,
     marginBottom: 4,
   },
   labelInvalid: {
-    color: GlobalStyles.colors.errorMessage,
+    color: theme.colors.errorMessage,
   },
   input: {
     paddingVertical: 8,
     paddingHorizontal: 6,
-    backgroundColor: GlobalStyles.colors.primary1,
+    backgroundColor: theme.colors.primary1,
     borderRadius: 4,
     fontSize: 16,
   },
   inputInvalid: {
-    backgroundColor: GlobalStyles.colors.errorMessage,
+    backgroundColor: theme.colors.errorMessage,
   },
 });

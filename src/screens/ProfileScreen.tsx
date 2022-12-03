@@ -39,12 +39,14 @@ function ProfileScreen({ route, navigation }: Props) {
       header: ({ navigation }) => (
         <Appbar.Header style={{ backgroundColor: theme.colors.primary }}>
           {navigation.canGoBack() && (
+            // @ts-ignore
             <Appbar.BackAction
               onPress={() => {
                 navigation.goBack();
               }}
             />
           )}
+          {/* @ts-ignore */}
           <Appbar.Content title="Profile Page" />
         </Appbar.Header>
       ),
@@ -81,18 +83,18 @@ function ProfileScreen({ route, navigation }: Props) {
           <View style={styles.socialIcon}>
             <IconButton
               size={30}
-              color="#56ACEE"
+              iconColor="#56ACEE"
               icon="whatsapp"
               onPress={() => Linking.openURL(`whatsapp://send?phone=${userMember.member?.telefoonnummer}`)}
             />
           </View>
           <View style={styles.socialIcon}>
-            <IconButton size={30} color="#56ACEE" icon="account-plus" onPress={() => downloadContact(userMember.member)} />
+            <IconButton size={30} iconColor="#56ACEE" icon="account-plus" onPress={() => downloadContact(userMember.member)} />
           </View>
           <View style={styles.socialIcon}>
             <IconButton
               size={30}
-              color="green"
+              iconColor="green"
               icon="phone"
               onPress={() => Linking.openURL(`tel:${userMember.member?.telefoonnummer}`)}
             />
@@ -128,6 +130,7 @@ function ProfileScreen({ route, navigation }: Props) {
                 <List.AccordionGroup>
                   {userMember.member?.ploeglidmaatschappen.map((ploeg, i) => (
                     <List.Accordion
+                      key={"pleog: " + i}
                       title={`${
                         ploeg.functie === "C"
                           ? "Coach"
@@ -159,7 +162,7 @@ function ProfileScreen({ route, navigation }: Props) {
                     <List.Accordion
                       title={`${commissie.functie} in ${commissie.commissie.afkorting}`}
                       id={`${commissie.commissie.id} ${i}`}
-                      key={i}
+                      key={"commisie" + i}
                       left={(props) => <View style={{ width: 30 }} />}
                     >
                       <List.Item

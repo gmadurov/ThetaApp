@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
-import { GlobalStyles } from "../constants/styles";
+import { theme } from "../context/Theme";
+
 import AuthenticatedStack from "./AuthenticatedStack";
 import TabNavigator from "./ChatNavigator";
 import DrawerNavigator from "./DrawerNavigator";
@@ -23,9 +24,9 @@ export function AuthenticatedRoutes({ isTryingLogin }: { isTryingLogin: boolean 
       <Stack.Navigator
         // initialRouteName="AuthenticatedStack"
         screenOptions={{
-          headerStyle: { backgroundColor: GlobalStyles.colors.primary3 },
+          headerStyle: { backgroundColor: theme.colors.primary3 },
           headerTintColor: "white",
-          contentStyle: { backgroundColor: GlobalStyles.colors.primary1 },
+          contentStyle: { backgroundColor: theme.colors.primary1 },
         }}
       >
         <Stack.Screen

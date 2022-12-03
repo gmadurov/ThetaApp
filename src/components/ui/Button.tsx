@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { GlobalStyles } from "../../constants/styles";
+import { theme } from "../../context/Theme";
+
 import React from "react";
 
 function Button({
@@ -29,9 +30,9 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     paddingVertical: 6,
     paddingHorizontal: 12,
-    backgroundColor: GlobalStyles.colors.primary5,
+    backgroundColor: theme.colors.primary5,
     elevation: 2,
-    shadowColor: GlobalStyles.colors.shadowColor,
+    shadowColor: theme.colors.shadowColor,
     shadowOffset: { width: 1, height: 1 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
@@ -41,7 +42,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     textAlign: "center",
-    color: GlobalStyles.colors.textColorLight,
+    color: theme.colors.textColorLight,
     fontSize: 16,
     fontWeight: "bold",
   },
