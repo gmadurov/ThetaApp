@@ -16,6 +16,7 @@ import {
   ViewToken,
   GestureResponderEvent,
   Share,
+  SafeAreaView,
 } from "react-native";
 import {
   ActivityIndicator,
@@ -56,7 +57,6 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
   const getObjects = async () => {
     setRefreshing(true);
     const { res, data } = await ApiRequest<PhotoAlbum>(`/photoalbums/${route.params.id}/`);
-
     setPhotoAlbum(() => data);
     setRefreshing(false);
   };
@@ -80,10 +80,8 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
   const _toggleModal = () => setModalVisible(!modalVisible);
   const _toggleMenu = (name: string) => () => setVisible({ ...visible, [name]: !visible[name] });
   const _getVisible = (name: string) => !!visible[name];
-
   const _getLoading = (name: string | number) => !!loading[name];
   const _toggleLoading = (name: string | number) => setLoading({ ...loading, [name]: !loading[name] });
-  // console.log(modalVisible);
 
   const carouselRef = useRef<ScrollView>(null);
   const flatListRef_display = useRef<FlatList<Photo> | null>(null);
@@ -109,13 +107,6 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
   const onSelect = (id: number, photoId: string | number) => {
     setIndexSelected(id);
     setSelectedPhotoId(photoId);
-    // if (id === indexSelected) return;
-    // carouselRef?.current?.scrollTo({ x: (indexSelected + 1) * width, y: 0, animated: true });
-    // flatListRef_display?.current?.scrollToIndex({
-    //   index: id,
-    //   animated: true,
-    //   viewPosition: 0.5,
-    // });
     flatListRef_Modal?.current?.scrollToIndex({
       index: id,
       animated: true,
@@ -149,7 +140,9 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
     navigation.setOptions({
       header: () => (
         <Appbar.Header style={{ backgroundColor: theme.colors.primary }}>
+          {/* @ts-ignore */}
           {navigation.canGoBack() && <Appbar.BackAction onPress={() => navigation.goBack()} />}
+          {/* @ts-ignore */}
           <Appbar.Content title={photoAlbum.title} />
         </Appbar.Header>
       ),
@@ -184,7 +177,6 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
           <FlatList
             ref={flatListRef_Modal}
             horizontal={true}
-            // style={{ flex: 1 }}
             data={photoAlbum.photos}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{
@@ -199,15 +191,15 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
             onScrollToIndexFailed={() => {
               flatListRef_Modal?.current?.scrollToEnd();
             }}
-            onViewableItemsChanged={useCallback(({ viewableItems }: { viewableItems: ViewToken[] }) => {
-              setIndexSelected(viewableItems[0]?.index || 0);
-              setSelectedPhotoId(viewableItems[0]?.item.id);
-              flatListRef_thumb?.current?.scrollToIndex({
-                index: viewableItems[0]?.index as number,
-                animated: true,
-                viewPosition: 0.5,
-              });
-            }, [])}
+            // onViewableItemsChanged={useCallback(({ viewableItems }: { viewableItems: ViewToken[] }) => {
+            //   setIndexSelected(viewableItems[0]?.index || 0);
+            //   setSelectedPhotoId(viewableItems[0]?.item.id);
+            //   flatListRef_thumb?.current?.scrollToIndex({
+            //     index: viewableItems[0]?.index as number,
+            //     animated: true,
+            //     viewPosition: 0.5,
+            //   });
+            // }, [])}
             renderItem={({ item: object, index }) => (
               <View key={`ViewPhoto-${object.id}-${index}`}>
                 <ReactNativeZoomableView
@@ -264,6 +256,7 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{
               paddingHorizontal: SPACING,
+              position: "absolute", bottom: 10
             }}
             initialScrollIndex={indexSelected}
             keyExtractor={(item) => item.id.toString()}
@@ -316,7 +309,6 @@ const PhotoAlbumScreen_single = ({ route, navigation }: Props) => {
           keyExtractor={(item) => item.id.toString()}
           showsVerticalScrollIndicator={false}
           onScrollToIndexFailed={() => flatListRef_display?.current?.scrollToEnd()}
-          // contentContainerStyle={styles.container}
           refreshing={refreshing}
           numColumns={2}
           onRefresh={async () => {

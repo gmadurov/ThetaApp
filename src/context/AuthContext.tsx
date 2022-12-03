@@ -40,13 +40,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   /**this function is simply to wake up the backend when working with heroku */
   const [baseUrl, setBaseUrl] = useState<string>("");
   // console.log("baseUrl", baseUrl);
-
+  console.log("authTokens43", authTokens.refresh_token);
   useLayoutEffect(() => {
     async () => {
       let url = await AsyncStorage.getItem("baseUrl");
       setBaseUrl(url || "");
     };
-    return () => { };
+    return () => {};
   }, []);
 
   useEffect(() => {
@@ -59,34 +59,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
       await AsyncStorage.setItem("baseUrl", baseUrl);
-      await logoutFunc();
     }
     wakeUp();
   }, [baseUrl]);
-
-  useLayoutEffect(() => {
-    async function save() {
-      if (authTokens?.access_token) {
-        await AsyncStorage.setItem("authTokens", authTokens.access_token ? JSON.stringify(authTokens) : "");
-      } else {
-        let data = await AsyncStorage.getItem("authTokens");
-        // check if the user.exp is expired
-        let locUser = data ? (JSON.parse(data) as AuthToken) : null;
-        // console.log("locUser", locUser);
-        if (locUser?.access_token) {
-          setAuthTokens(locUser);
-          setAuthTokensDecoded(jwtDecode(locUser.access_token));
-          setUser(locUser.user);
-        } else {
-          await AsyncStorage.removeItem("authTokens");
-          setUser({} as User);
-          setAuthTokens({} as AuthToken);
-          setAuthTokensDecoded({} as AuthToken_decoded);
-        }
-      }
-    }
-    save();
-  }, [authTokens]);
+  
   async function loginFunc(username: string, password: string, setIsAuthenticating: any) {
     let { res, data } = await originalRequest<FailedRequest>(`/login/`, {
       method: "POST",
@@ -124,6 +100,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   async function logoutFunc() {
+    console.log("logoutFunc");
     await AsyncStorage.removeItem("authTokens");
     setUser(() => ({} as User));
     setAuthTokens(() => ({} as AuthToken));

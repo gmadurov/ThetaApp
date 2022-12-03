@@ -1,18 +1,11 @@
 import React from "react";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import ChatScreen from "../screens/ChatScreen";
 import { Appbar } from "react-native-paper";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAppTheme } from "../context/Theme";
 import { theme } from "../context/Theme";
-export type ChatParamList = {
-  FrustSchrift: undefined;
-  SpamSchrift: undefined;
-  [key: string]: any;
-};
-
-const Tab = createBottomTabNavigator<ChatParamList>();
+import { Tab } from "./Navigators";
 
 export default function TabNavigator() {
   const navigation = useNavigation();

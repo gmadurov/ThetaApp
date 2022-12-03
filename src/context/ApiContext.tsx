@@ -39,15 +39,10 @@ export type ApiContextType = {
       [key: string]: any;
     }
   ): Promise<{ res: Response; data: TResponse }>;
-  ApiFileRequest<TResponse>(
-    url: string,
-    config?: {
-      headers?: { [key: string]: any; "Content-Type": string };
-      [key: string]: any;
-    }
-  ): Promise<{ res: Response; data: TResponse }>;
   refreshToken: (authTokens: AuthToken) => Promise<AuthToken>;
   baseUrl: string;
+  setAuthTokens: React.Dispatch<React.SetStateAction<AuthToken>>
+  setAuthTokensDecoded: React.Dispatch<React.SetStateAction<AuthToken_decoded>>
 };
 
 const ApiContext = createContext<ApiContextType>({} as ApiContextType);
@@ -69,10 +64,8 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
   } = useContext(AuthContext);
 
   async function returnAccessToken() {
-    // if (authTokens.access_token) {
-    //   return authTokens?.access_token;
-    // }
     let tokens = JSON.parse((await AsyncStorage.getItem("authTokens")) as string) as AuthToken;
+    if (!tokens) return;
     return tokens?.access_token;
   }
 
@@ -81,7 +74,6 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
     if (authToken === undefined) {
       authToken = (await JSON.parse((await AsyncStorage.getItem("authTokens")) as string)) as AuthToken;
     }
-
     const { res, data } = await originalRequest<FailedRequest>(`/login/refresh/`, {
       method: "POST",
       headers: {
@@ -131,6 +123,7 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
         autoHide: true,
         duration: 1500,
       });
+      console.log("refresh token expired");
       await logoutFunc();
       return {} as AuthToken;
     }
@@ -186,75 +179,22 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
         Authorization: await returnAccessToken(),
       };
     }
-
-    if (user.id) {
-      const { res, data } = await originalRequest<TResponse>(url, config);
-      // if (res?.status === 200) {
-      // console.warn("request Failed", res?.status);
-      return { res: res, data: data };
-      // }
+    if (!config.headers.Authorization) {
+      return { res: {} as Response, data: {} as TResponse };
     }
-    return { res: {} as Response, data: {} as TResponse };
-  }
-  // /** ## ust this instead of fetch for Files
-  //  * @params {url: string , config : object}
-  //  * @returns \{ res, data \}*/
-  async function ApiFileRequest<TResponse>(
-    url: string,
-    config:
-      | {
-          headers?: { [key: string]: any; "Content-Type": "application/json" };
 
-          [key: string]: any;
-        }
-      | undefined = {
-      headers: {
-        Authorization: authTokens?.access_token,
-        "Content-Type": "application/json",
-      },
-    }
-  ): Promise<{ res: Response; data: TResponse }> {
-    await checkTokens();
-    if (user.id) {
-      const { res, data } = await originalRequest<TResponse>(url, config);
-      if (res?.status === 401) {
-        // Alert.alert("", url, config);
-        showMessage({
-          message: `Unauthorized`,
-          description: ``,
-          type: "danger",
-          floating: true,
-          hideStatusBar: true,
-          autoHide: true,
-          duration: 1500,
-        });
-      }
-      if (res?.status === 403) {
-        // Alert.alert("", url, config);
-        showMessage({
-          message: `Permision denied`,
-          description: ``,
-          type: "danger",
-          floating: true,
-          hideStatusBar: true,
-          autoHide: true,
-          duration: 1500,
-        });
-      }
-      return { res, data };
-    }
-    return { res: {} as Response, data: {} as TResponse };
-
-    // console.log("input", url);
+    const { res, data } = await originalRequest<TResponse>(url, config);
+    return { res: res, data: data };
   }
 
   const value_dic = {
     user: user,
     setUser: setUser,
     ApiRequest: ApiRequest,
-    ApiFileRequest: ApiFileRequest,
     refreshToken: refreshToken,
     baseUrl,
+    setAuthTokens,
+    setAuthTokensDecoded,
   };
   return <ApiContext.Provider value={value_dic}>{children}</ApiContext.Provider>;
 };

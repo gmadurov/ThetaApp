@@ -17,104 +17,36 @@ import LoginScreen from "./screens/LoginScreen";
 import { NavigationContainer } from "@react-navigation/native";
 import { Provider as PaperProvider, useTheme } from "react-native-paper";
 import { StatusBar } from "expo-status-bar";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import jwt_decode from "jwt-decode";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import TabNavigator from "./navigation/TabNavigator";
 import ProfileScreen from "./screens/ProfileScreen";
 import AuthenticatedStack from "./navigation/AuthenticatedStack";
 import { useAppTheme } from "./context/Theme";
-
-export type AppParamsList = {
-  Login: undefined;
-  Drawer: undefined;
-  Tab: undefined;
-  AuthenticatedStack: undefined;
-};
-
-const Stack = createNativeStackNavigator<AppParamsList>();
-
-
-function AuthRoutes() {
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: GlobalStyles.colors.primary2 },
-        headerTintColor: "white",
-        contentStyle: { backgroundColor: GlobalStyles.colors.primary1 },
-      }}
-    >
-      <Stack.Screen name="Login" component={LoginScreen} />
-      {/* <Stack.Screen name="Signup" component={SignupScreen} /> */}
-    </Stack.Navigator>
-  );
-}
-
-function AuthenticatedRoutes({ isTryingLogin }: { isTryingLogin: boolean }) {
-  // const Settings = useContext(SettingsContext);
-  useEffect(() => {
-    async function fetchToken() {
-      if (!isTryingLogin) {
-        // await Purchase.GET();
-        // await Settings.
-      }
-    }
-    fetchToken();
-    // eslint-disable-next-line
-  }, [isTryingLogin]);
-
-  return (
-    <>
-      <Stack.Navigator
-        // initialRouteName="AuthenticatedStack"
-        screenOptions={{
-          headerStyle: { backgroundColor: GlobalStyles.colors.primary3 },
-          headerTintColor: "white",
-          contentStyle: { backgroundColor: GlobalStyles.colors.primary1 },
-        }}
-      >
-        <Stack.Screen
-          name="Drawer"
-          component={DrawerNavigator}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="AuthenticatedStack"
-          component={AuthenticatedStack}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="Tab"
-          component={TabNavigator}
-          options={{
-            headerShown: false,
-          }}
-        />
-      </Stack.Navigator>
-    </>
-  );
-}
+import { Navigation } from "./navigation/Navigation";
+import { User } from "./models/Users";
 
 function Root() {
   const [isTryingLogin, setIsTryingLogin] = useState(true);
-
-  const { refreshToken, setUser } = useContext(ApiContext);
-
+  const { refreshToken, setUser, setAuthTokens, setAuthTokensDecoded } = useContext(ApiContext);
   useLayoutEffect(() => {
     async function fetchToken() {
       const storedTokens = JSON.parse((await AsyncStorage.getItem("authTokens")) as string) as AuthToken;
       // console.log("index 111", JSON.parse(storedTokens || "{}"));
       // await AsyncStorage.clear()
-      // console.log(storedTokens ? true : false);
+      const allkeys = await AsyncStorage.getAllKeys();
+      console.log(allkeys);
 
       if (storedTokens) {
         setUser(storedTokens.user);
         if ((jwt_decode(storedTokens.access_token as string) as TokenInfo).exp < Date.now()) {
           setIsTryingLogin(false);
+          setAuthTokens(storedTokens);
+          setAuthTokensDecoded({
+            access_token: jwt_decode(storedTokens.access_token as string),
+            user: storedTokens.user as User,
+            refresh_token: jwt_decode(storedTokens.refresh_token as string),
+          });
         }
         showMessage({
           message: `Authentication woord refreshed`,
@@ -148,11 +80,6 @@ function Root() {
   return <Navigation onLayout={onLayoutRootView} isTryingLogin={isTryingLogin} />;
 }
 
-function Navigation({ onLayout, isTryingLogin }: { onLayout: () => Promise<void>; isTryingLogin: boolean }) {
-  const { user } = useContext(AuthContext);
-
-  return <>{!user?.id ? <AuthRoutes /> : <AuthenticatedRoutes isTryingLogin={isTryingLogin} />}</>;
-}
 // messages
 // "success" (green), "warning" (orange), "danger" (red), "info" (blue) and "default" (gray)
 export default function App() {
