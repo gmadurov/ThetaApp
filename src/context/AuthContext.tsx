@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     wakeUp();
   }, [baseUrl]);
-  
+
   async function loginFunc(username: string, password: string, setIsAuthenticating: any) {
     let { res, data } = await originalRequest<FailedRequest>(`/login/`, {
       method: "POST",
@@ -107,11 +107,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   async function originalRequest<TResponse>(url: string, config: object): Promise<{ res: Response; data: TResponse }> {
     let urlFetch;
-    if (!["", null].includes(baseUrl)) {
-      urlFetch = `${baseUrl}${url}`;
-      // console.log("urlFetch 162", );
+    if (!url.includes("http")) {
+      if (!["", null].includes(baseUrl)) {
+        urlFetch = `${baseUrl}${url}`;
+        // console.log("urlFetch 162", );
+      } else {
+        urlFetch = `${await AsyncStorage.getItem("baseUrl")}${url}`;
+      }
     } else {
-      urlFetch = `${await AsyncStorage.getItem("baseUrl")}${url}`;
+      urlFetch = url;
     }
     const res = await fetch(urlFetch, config);
     const data = await res.json();

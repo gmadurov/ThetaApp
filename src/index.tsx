@@ -1,22 +1,30 @@
-import "./polyfills";
 import "react-native-gesture-handler";
+import "./polyfills";
 
 import * as SplashScreen from "expo-splash-screen";
 
+import * as Notifications from "expo-notifications";
+import React, { useCallback, useContext, useLayoutEffect, useState } from "react";
 import FlashMessage, { showMessage } from "react-native-flash-message";
-import React, { useCallback, useContext, useEffect, useLayoutEffect, useState } from "react";
-import TokenInfo, { AuthToken, AuthToken_decoded } from "./models/AuthToken";
+import TokenInfo, { AuthToken } from "./models/AuthToken";
 
-import ApiContext from "./context/ApiContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { FullProvider } from "./context/FullContext";
 import { NavigationContainer } from "@react-navigation/native";
-import { Provider as PaperProvider, useTheme } from "react-native-paper";
 import { StatusBar } from "expo-status-bar";
 import jwt_decode from "jwt-decode";
+import { Provider as PaperProvider } from "react-native-paper";
+import ApiContext from "./context/ApiContext";
+import { FullProvider } from "./context/FullContext";
 import { useAppTheme } from "./context/Theme";
 import { Navigation } from "./navigation/Navigation";
-import { User } from "./models/Users";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
 function Root() {
   const [isTryingLogin, setIsTryingLogin] = useState(true);
@@ -68,6 +76,8 @@ function Root() {
 // "success" (green), "warning" (orange), "danger" (red), "info" (blue) and "default" (gray)
 export default function App() {
   const theme = useAppTheme();
+
+
   return (
     <PaperProvider theme={theme}>
       <NavigationContainer>
