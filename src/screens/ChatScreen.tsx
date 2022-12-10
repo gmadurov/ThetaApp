@@ -1,4 +1,4 @@
-import { Avatar, Button, Divider } from "react-native-paper";
+import { Avatar, Button, Divider, IconButton, TextInput } from "react-native-paper";
 import { ChatItem, SpamResponse } from "../models/Spams";
 import { FlatList, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
@@ -7,8 +7,8 @@ import ApiContext from "../context/ApiContext";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import RenderMarkdown from "../components/RenderMarkdown";
 import dayjs from "dayjs";
-import { ChatParamList } from "../navigation/ChatNavigator";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { ChatParamList } from "../navigation/Navigators";
 type Props = NativeStackScreenProps<ChatParamList, "FrustSchrift" | "SpamSchrift">;
 
 const ChatScreen = ({ route, navigation }: Props) => {
@@ -20,55 +20,9 @@ const ChatScreen = ({ route, navigation }: Props) => {
   const [previous, setPrevious] = useState<string | undefined>(undefined);
   const [page, setPage] = useState<string | undefined>();
   const [ordering, setOrdering] = useState<string>("pub_date");
+  const [text, setText] = useState<string>("");
 
-  const getSigns = (n: number) => {
-    var SpamIcons;
-    if (n === 1) {
-      return ["add-outline"];
-    } else if (n > 1 && n < 50) {
-      return ["code-slash-outline"];
-    } else if (n >= 50 && n < 125) {
-      return ["star-half"];
-    } else if (n >= 125 && n < 1000) {
-      var remain = n % 250; /**Calculate remainder to determine if half stars are needed */
-      var div = (n - remain) / 250; /**Calculate amount of hundred's */
-      /** Check if amount of spams has a remainder */
-      if (remain < 125) {
-        var i = 0;
-        var arr = [];
-        while (i < div) {
-          arr.push("star");
-          i++;
-        }
-        SpamIcons = arr;
-      } else {
-        var i = 0;
-        var arr = [];
-        while (i < div) {
-          arr.push("star");
-          i++;
-        }
-        arr.push("star-half");
-        SpamIcons = arr;
-      }
-      return SpamIcons;
-    } else if (n >= 1000 && n < 5000) {
-      var remain = n % 1000; /**Calculate remainder to determine if half stars are needed */
-      var div = (n - remain) / 1000; /**Calculate amount of hundred's */
-      var i = 0;
-      var arr = [];
-      while (i < div) {
-        arr.push("trophy");
-        i++;
-      }
-      SpamIcons = arr;
-      return SpamIcons;
-    } else {
-      return ["medal"];
-    }
-  };
-
-  const getSpams = async () => {
+  const getChat = async () => {
     setRefreshing(true);
     const { res, data } = await ApiRequest<SpamResponse>(
       `/${!!spam ? "spams" : ""}${!!frust ? "frusts" : ""}/${page || ordering ? "?" : ""}${page ? "page=" + page : ""}
@@ -100,7 +54,7 @@ const ChatScreen = ({ route, navigation }: Props) => {
 
   useEffect(() => {
     if (user?.id) {
-      getSpams();
+      getChat();
     }
     return () => {
       setChats([] as ChatItem[]);
@@ -187,8 +141,63 @@ const ChatScreen = ({ route, navigation }: Props) => {
     );
   };
 
+  const createChat = async () => {
+    if (text.length > 0) {
+      const { res, data } = await ApiRequest<ChatItem>(`/${!!spam ? "spams" : ""}${!!frust ? "frusts" : ""}/`, {
+        method: "POST",
+        body: JSON.stringify({ text: text }),
+      });
+      if (res.status === 201) {
+        setText("");
+        await getChat();
+      }
+    }
+  };
+
   return (
     <>
+      <TextInput
+        mode="flat"
+        placeholder={`${!!spam ? "Spam" : ""}${!!frust ? "Frust" : ""}`}
+        value={text}
+        onChangeText={(text) => setText(text)}
+        right={
+          <TextInput.Icon
+            icon="upload-outline"
+            size={20}
+            onPress={createChat}
+            // this is needed for typescript to not complain
+            // once react-native-paper fixes this, this can be removed
+            onPointerEnter={undefined}
+            onPointerEnterCapture={undefined}
+            onPointerLeave={undefined}
+            onPointerLeaveCapture={undefined}
+            onPointerMove={undefined}
+            onPointerMoveCapture={undefined}
+            onPointerCancel={undefined}
+            onPointerCancelCapture={undefined}
+            onPointerDown={undefined}
+            onPointerDownCapture={undefined}
+            onPointerUp={undefined}
+            onPointerUpCapture={undefined}
+          />
+        }
+        // this is needed for typescript to not complain
+        // once react-native-paper fixes this, this can be removed
+        onPointerEnter={undefined}
+        onPointerEnterCapture={undefined}
+        onPointerLeave={undefined}
+        onPointerLeaveCapture={undefined}
+        onPointerMove={undefined}
+        onPointerMoveCapture={undefined}
+        onPointerCancel={undefined}
+        onPointerCancelCapture={undefined}
+        onPointerDown={undefined}
+        onPointerDownCapture={undefined}
+        onPointerUp={undefined}
+        onPointerUpCapture={undefined}
+        cursorColor={undefined}
+      />
       <FlatList
         data={chats}
         renderItem={renderItem}
@@ -199,7 +208,7 @@ const ChatScreen = ({ route, navigation }: Props) => {
         refreshing={refreshing}
         onRefresh={async () => {
           setRefreshing(true);
-          await getSpams();
+          await getChat();
           setRefreshing(false);
         }}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
@@ -291,3 +300,49 @@ const styles = StyleSheet.create({
     margin: 16,
   },
 });
+const getSigns = (n: number) => {
+  var SpamIcons;
+  if (n === 1) {
+    return ["add-outline"];
+  } else if (n > 1 && n < 50) {
+    return ["code-slash-outline"];
+  } else if (n >= 50 && n < 125) {
+    return ["star-half"];
+  } else if (n >= 125 && n < 1000) {
+    var remain = n % 250; /**Calculate remainder to determine if half stars are needed */
+    var div = (n - remain) / 250; /**Calculate amount of hundred's */
+    /** Check if amount of spams has a remainder */
+    if (remain < 125) {
+      var i = 0;
+      var arr = [];
+      while (i < div) {
+        arr.push("star");
+        i++;
+      }
+      SpamIcons = arr;
+    } else {
+      var i = 0;
+      var arr = [];
+      while (i < div) {
+        arr.push("star");
+        i++;
+      }
+      arr.push("star-half");
+      SpamIcons = arr;
+    }
+    return SpamIcons;
+  } else if (n >= 1000 && n < 5000) {
+    var remain = n % 1000; /**Calculate remainder to determine if half stars are needed */
+    var div = (n - remain) / 1000; /**Calculate amount of hundred's */
+    var i = 0;
+    var arr = [];
+    while (i < div) {
+      arr.push("trophy");
+      i++;
+    }
+    SpamIcons = arr;
+    return SpamIcons;
+  } else {
+    return ["medal"];
+  }
+};

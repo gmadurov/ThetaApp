@@ -7,6 +7,7 @@ import { theme } from "../context/Theme";
 import LedenlijstScreen from "../screens/LedenlijstScreen";
 import NewsPage from "../screens/NewsPage";
 import PhotoAlbumScreen from "../screens/PhotoAlbumScreen";
+import SettingsScreen from "../screens/SettingsScreen";
 import ChatNavigator from "./ChatNavigator";
 import { Drawer } from "./Navigators";
 
@@ -85,6 +86,26 @@ const DrawerNavigator = () => {
               />
               {/* @ts-ignore */}
               <Appbar.Content title="Ledenlijst" />
+            </Appbar.Header>
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{
+          title: "Instellingen",
+          header: ({ navigation }) => (
+            <Appbar.Header style={{ backgroundColor: theme.colors.primary }}>
+              {/* @ts-ignore */}
+              <Appbar.Action
+                onPress={() => {
+                  navigation.dispatch(DrawerActions.openDrawer);
+                }}
+                icon={"menu"}
+              />
+              {/* @ts-ignore */}
+              <Appbar.Content title="Instellingen" />
             </Appbar.Header>
           ),
         }}

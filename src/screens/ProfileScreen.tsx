@@ -85,24 +85,21 @@ function ProfileScreen({ route, navigation }: Props) {
               size={30}
               iconColor="#56ACEE"
               icon="whatsapp"
-              onPress={() => Linking.openURL(`whatsapp://send?phone=${userMember.member?.telefoonnummer}`)}
-            />
+              onPress={() => Linking.openURL(`whatsapp://send?phone=${userMember.member?.telefoonnummer}`)} onPointerEnter={undefined} onPointerEnterCapture={undefined} onPointerLeave={undefined} onPointerLeaveCapture={undefined} onPointerMove={undefined} onPointerMoveCapture={undefined} onPointerCancel={undefined} onPointerCancelCapture={undefined} onPointerDown={undefined} onPointerDownCapture={undefined} onPointerUp={undefined} onPointerUpCapture={undefined}            />
           </View>
           <View style={styles.socialIcon}>
             <IconButton
               size={30}
               iconColor="#56ACEE"
               icon="account-plus"
-              onPress={() => downloadContact(userMember.member)}
-            />
+              onPress={() => downloadContact(userMember.member)} onPointerEnter={undefined} onPointerEnterCapture={undefined} onPointerLeave={undefined} onPointerLeaveCapture={undefined} onPointerMove={undefined} onPointerMoveCapture={undefined} onPointerCancel={undefined} onPointerCancelCapture={undefined} onPointerDown={undefined} onPointerDownCapture={undefined} onPointerUp={undefined} onPointerUpCapture={undefined}            />
           </View>
           <View style={styles.socialIcon}>
             <IconButton
               size={30}
               iconColor="green"
               icon="phone"
-              onPress={() => Linking.openURL(`tel:${userMember.member?.telefoonnummer}`)}
-            />
+              onPress={() => Linking.openURL(`tel:${userMember.member?.telefoonnummer}`)} onPointerEnter={undefined} onPointerEnterCapture={undefined} onPointerLeave={undefined} onPointerLeaveCapture={undefined} onPointerMove={undefined} onPointerMoveCapture={undefined} onPointerCancel={undefined} onPointerCancelCapture={undefined} onPointerDown={undefined} onPointerDownCapture={undefined} onPointerUp={undefined} onPointerUpCapture={undefined}            />
           </View>
         </View>
       </View>
@@ -131,7 +128,7 @@ function ProfileScreen({ route, navigation }: Props) {
           <View style={{ marginTop: 30 }}>
             <List.AccordionGroup>
               {/* left={()} */}
-              {userMember.member?.ploeglidmaatschappen.length > 0 && (
+              {userMember.member?.ploeglidmaatschappen?.length > 0 && (
                 <List.Accordion title="Ploegjes" id={1}>
                   <List.AccordionGroup>
                     {userMember.member?.ploeglidmaatschappen.map((ploeg, i) => (
@@ -163,7 +160,7 @@ function ProfileScreen({ route, navigation }: Props) {
                   </List.AccordionGroup>
                 </List.Accordion>
               )}
-              {userMember.member?.commissielidmaatschappen.length > 0 && (
+              {userMember.member?.commissielidmaatschappen?.length > 0 && (
                 <List.Accordion title="Commissies" id={2}>
                   <List.AccordionGroup>
                     {userMember.member?.commissielidmaatschappen.map((commissie, i) => (
@@ -189,9 +186,9 @@ function ProfileScreen({ route, navigation }: Props) {
                 </List.Accordion>
               )}
               {/* Bestuurschappen */}
-              {userMember.member?.bestuurslidmaatschappen.length > 0 && (
+              {userMember.member?.bestuurslidmaatschappen?.length > 0 && (
                 <>
-                  {userMember.member?.bestuurslidmaatschappen.map((bestuur, i) => (
+                  {userMember.member?.bestuurslidmaatschappen?.map((bestuur, i) => (
                     <List.Accordion title={`${bestuur.bestuur.naam} Bestuur`} id={`${bestuur.bestuur.id} ${i}`} key={i}>
                       <List.Item
                         // {dayjs(item.pub_date).format("D-M-YYYY | hh:mmA")}

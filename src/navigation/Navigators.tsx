@@ -26,6 +26,7 @@ export type DrawerParamList = {
   WalletUpgrateScreen: undefined;
   LedenlijstScreen: undefined;
   PhotoAlbumScreen: undefined;
+  Settings: undefined;
   // [key: string]: undefined | object; //remove if it doesnt cause any other ts-errors
 };
 export const Drawer = createDrawerNavigator<DrawerParamList>();

@@ -51,7 +51,7 @@ const NewsPage = ({ route, navigation }: Props) => {
     );
     setRefreshing(false);
   };
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (user?.id) {
       getNewsArticles();
     }

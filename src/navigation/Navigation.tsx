@@ -22,8 +22,25 @@ export function Navigation({ onLayout, isTryingLogin }: { onLayout: () => Promis
   const responseListener = useRef<Subscription>({} as Subscription);
 
   useEffect(() => {
-    registerForPushNotificationsAsync().then((token: string) => setExpoPushToken(token));
-
+    async function getNotifications() {
+      const token = await registerForPushNotificationsAsync();
+      setExpoPushToken(token);
+      const { res, data } = await ApiRequest(`/notfication/${token}/`, { method: "GET" });
+      if (res?.status !== 200) {
+        const { res, data } = await ApiRequest(`/notfication/`, {
+          method: "POST",
+          body: JSON.stringify({ token: token, user: user?.id }),
+        });
+        if (res?.status !== 200) {
+          showMessage({
+            message: "Er is iets fout gegaan met het aanmelden voor notificaties",
+            type: "danger",
+            floating: true,
+          });
+        }
+      }
+    }
+    getNotifications();
     notificationListener.current = Notifications.addNotificationReceivedListener((notification) =>
       setNotification(notification)
     );

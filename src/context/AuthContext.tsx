@@ -122,7 +122,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // console.log(data);
     if (res?.status === 401) {
       await logoutFunc();
-    } else if (res?.status !== 200) {
+    } else if (![200,201].includes(res?.status)) {
       // Alert.alert(`Error ${res?.status} fetching ${url}`);
       showMessage({
         message: `Error ${res?.status}`,
