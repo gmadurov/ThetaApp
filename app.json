@@ -15,9 +15,7 @@
       "fallbackToCacheTimeout": 0,
       "url": "https://u.expo.dev/9c1dbaba-dbf3-4035-b053-6cd52db7d77a"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.gusmadvol.esrtheta",
@@ -28,10 +26,7 @@
         "foregroundImage": "./src/assets/pwa-icons/manifest-icon-512.png",
         "backgroundColor": "#FFFFFF"
       },
-      "permissions": [
-        "WRITE_CONTACTS",
-        "CAMERA_ROLL"
-      ],
+      "permissions": ["WRITE_CONTACTS", "CAMERA_ROLL"],
       "package": "com.gusmadvol.esrtheta"
     },
     "web": {
@@ -50,12 +45,9 @@
       [
         "expo-notifications",
         {
-          "icon": "./local/assets/notification-icon.png",
+          "icon": "./src/assets/favicon.png",
           "color": "#ffffff",
-          "sounds": [
-            "./local/assets/notification-sound.wav",
-            "./local/assets/notification-sound-other.wav"
-          ]
+          "sounds": ["./src/assets/sounds/klein_geil_klootje.wav"]
         }
       ],
       [
