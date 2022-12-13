@@ -1,15 +1,17 @@
 import * as Device from "expo-device";
-import { Subscription } from "expo-modules-core";
 import * as Notifications from "expo-notifications";
-import { string } from "prop-types";
+
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { Platform } from "react-native";
-import { showMessage } from "react-native-flash-message";
+
 import ApiContext from "../context/ApiContext";
 import AuthContext from "../context/AuthContext";
-import SettingsContext from "../context/SettingsContext";
-import { AuthenticatedRoutes } from "./Authenticated";
 import { AuthRoutes } from "./UnAuthenticatedRoutes";
+import { AuthenticatedRoutes } from "./Authenticated";
+import { Platform } from "react-native";
+import SettingsContext from "../context/SettingsContext";
+import { Subscription } from "expo-modules-core";
+import { showMessage } from "react-native-flash-message";
+import { string } from "prop-types";
 
 export function Navigation({ onLayout, isTryingLogin }: { onLayout: () => Promise<void>; isTryingLogin: boolean }) {
   const { user } = useContext(AuthContext);
@@ -25,9 +27,9 @@ export function Navigation({ onLayout, isTryingLogin }: { onLayout: () => Promis
     async function getNotifications() {
       const token = await registerForPushNotificationsAsync();
       setExpoPushToken(token);
-      const { res, data } = await ApiRequest(`/notfication/${token}/`, { method: "GET" });
+      const { res, data } = await ApiRequest(`/notifications/${token}/`, { method: "GET" });
       if (res?.status !== 200) {
-        const { res, data } = await ApiRequest(`/notfication/`, {
+        const { res, data } = await ApiRequest(`/notifications/`, {
           method: "POST",
           body: JSON.stringify({ token: token, user: user?.id }),
         });
@@ -54,13 +56,13 @@ export function Navigation({ onLayout, isTryingLogin }: { onLayout: () => Promis
       if (activity) {
         const { res, data } = await ApiRequest<
           | {
+            id: number;
+            author: {
               id: number;
-              author: {
-                id: number;
-                name: string;
-              };
-              remark: string;
-            }
+              name: string;
+            };
+            remark: string;
+          }
           | string
         >(`/activities/${activity}/entries/`, {
           method: "POST",
@@ -190,7 +192,9 @@ async function registerForPushNotificationsAsync() {
       alert("Failed to get push token for push notification!");
       return "";
     }
-    token = (await Notifications.getExpoPushTokenAsync()).data;
+    token = (await Notifications.getExpoPushTokenAsync({
+      experienceId: '@gusmadvol/esr-theta', // do not change this it will break notifications in production
+    })).data;
     // console.log(token);
   } else {
     alert("Must use physical device for Push Notifications");

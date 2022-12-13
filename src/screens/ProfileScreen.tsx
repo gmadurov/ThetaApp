@@ -1,18 +1,20 @@
-import { Link } from "@react-navigation/native";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import dayjs from "dayjs";
 import * as React from "react";
-import { useContext, useLayoutEffect, useState } from "react";
+
 import { Animated, Dimensions, Image, Linking, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Appbar, Avatar, Card, IconButton, List } from "react-native-paper";
+import { useContext, useLayoutEffect, useState } from "react";
+
 import ApiContext from "../context/ApiContext";
 import AuthContext from "../context/AuthContext";
-import { Member } from "../models/Members";
-import { User } from "../models/Users";
 import { AuthenticatedStackParamsList } from "../navigation/AuthenticatedStack";
+import { Link } from "@react-navigation/native";
+import { Member } from "../models/Members";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { User } from "../models/Users";
+import dayjs from "dayjs";
 import { downloadContact } from "./LedenlijstScreen";
-
 import { theme } from "../context/Theme";
+
 type UserMember = {
   user: User;
   member: Member;
@@ -146,10 +148,15 @@ function ProfileScreen({ route, navigation }: Props) {
                         id={ploeg.ploeg.id}
                         left={(props) => <View style={{ width: 30 }} />}
                       >
+                        {/* @ts-ignore */}
                         <List.Item title={`Geslacht: ${ploeg.ploeg.geslacht}`} />
+                        {/* @ts-ignore */}
                         <List.Item title={`Sectie: ${ploeg.ploeg.sectie}`} />
+                        {/* @ts-ignore */}
                         <List.Item title={`Niveau: ${ploeg.ploeg.niveau}`} />
+                        {/* @ts-ignore */}
                         <List.Item title={`Seizoen: ${ploeg.ploeg.seizoen}`} />
+                        {/* @ts-ignore */}
                         {ploeg.ploeg.verhaal && <List.Item title={`Verhaal: ${ploeg.ploeg.verhaal}`} />}
                         {/* for react native paper == v5 */}
                         {/* {ploeg.ploeg.foto && (
@@ -170,10 +177,12 @@ function ProfileScreen({ route, navigation }: Props) {
                         key={"commisie" + i}
                         left={(props) => <View style={{ width: 30 }} />}
                       >
+                        {/* @ts-ignore */}
                         <List.Item
                           // {dayjs(item.pub_date).format("D-M-YYYY | hh:mmA")}
                           title={`${commissie.commissie.naam}`}
                         />
+                        {/* @ts-ignore */}
                         <List.Item
                           // {dayjs(item.pub_date).format("D-M-YYYY | hh:mmA")}
                           title={`Van ${dayjs(commissie.begindatum).format("MMM YYYY")} ${
@@ -190,10 +199,12 @@ function ProfileScreen({ route, navigation }: Props) {
                 <>
                   {userMember.member?.bestuurslidmaatschappen?.map((bestuur, i) => (
                     <List.Accordion title={`${bestuur.bestuur.naam} Bestuur`} id={`${bestuur.bestuur.id} ${i}`} key={i}>
+                      {/* @ts-ignore */}
                       <List.Item
                         // {dayjs(item.pub_date).format("D-M-YYYY | hh:mmA")}
                         title={`${bestuur.functie}`}
                       />
+                      {/* @ts-ignore */}
                       <List.Item
                         title={`Vanaf ${dayjs(bestuur.bestuur.installatiedatum).format("MMMM YYYY")} ${
                           bestuur.bestuur.dechargedatum

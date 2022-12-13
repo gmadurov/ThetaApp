@@ -3,15 +3,14 @@ import * as Contacts from "expo-contacts";
 import { Avatar, Button, Menu, Searchbar, TouchableRipple } from "react-native-paper";
 import { FlatList, Linking, StyleSheet, Text, View } from "react-native";
 import { Member, MemberRespose } from "../models/Members";
-import React, { useCallback, useContext, useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 
 import ApiContext from "../context/ApiContext";
-import IconButton from "../components/ui/IconButton";
+import { DrawerParamList } from "../navigation/Navigators";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { showMessage } from "react-native-flash-message";
 import { useState } from "react";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { DrawerParamList } from "../navigation/DrawerNavigator";
 
 type MenuVisibility = {
   [key: string]: boolean | undefined;
@@ -57,14 +56,14 @@ export const downloadContact = async (member: Member) => {
       [Contacts.Fields.Company]: "E.S.R Theta",
       [Contacts.Fields.PhoneNumbers]: member.telefoonnummer
         ? [
-            {
-              number: member.telefoonnummer,
-              isPrimary: true,
-              digits: "1234567890",
-              countryCode: "PA",
-              label: "main",
-            },
-          ]
+          {
+            number: member.telefoonnummer,
+            isPrimary: true,
+            digits: "1234567890",
+            countryCode: "PA",
+            label: "main",
+          },
+        ]
         : [undefined],
       [Contacts.Fields.Emails]: member.emailadres ? [{ email: member.emailadres }] : undefined,
     };
@@ -129,8 +128,7 @@ const LedenlijstScreen = ({ route, navigation }: Props) => {
   const getMembers = async () => {
     setRefreshing(true);
     const { res, data } = await ApiRequest<MemberRespose>(
-      `/members/${page || searchQuery || ordering ? "?" : ""}${page ? "page=" + page : ""}${page && searchQuery ? "&" : ""}${
-        searchQuery ? "searchstring=" + searchQuery : ""
+      `/members/${page || searchQuery || ordering ? "?" : ""}${page ? "page=" + page : ""}${page && searchQuery ? "&" : ""}${searchQuery ? "searchstring=" + searchQuery : ""
       }${ordering && (searchQuery || page) ? "&" : ""}${ordering ? "ordering=" + ordering : ""}`
     );
 
@@ -138,19 +136,19 @@ const LedenlijstScreen = ({ route, navigation }: Props) => {
     setNext(() =>
       data.next
         ? data?.next
-            .split("/v2/members/?")[1]
-            .split("&")
-            .filter((x) => x.includes("page="))[0]
-            .split("=")[1]
+          .split("/v2/members/?")[1]
+          .split("&")
+          .filter((x) => x.includes("page="))[0]
+          .split("=")[1]
         : undefined
     );
     setPrevious(() =>
       parseInt(next as string) > 2
         ? (data?.previous
-            ?.split("/v2/members/?")[1]
-            .split("&")
-            .filter((x) => x.includes("page="))[0]
-            .split("=")[1] as string)
+          ?.split("/v2/members/?")[1]
+          .split("&")
+          .filter((x) => x.includes("page="))[0]
+          .split("=")[1] as string)
         : undefined
     );
     setRefreshing(false);
@@ -172,6 +170,7 @@ const LedenlijstScreen = ({ route, navigation }: Props) => {
     return (
       <TouchableRipple
         onPress={() =>
+          // @ts-ignore
           navigation.navigate("AuthenticatedStack", {
             screen: "ProfilePagina",
             params: { id: item?.id },
@@ -221,6 +220,7 @@ const LedenlijstScreen = ({ route, navigation }: Props) => {
                 <Menu.Item
                   onPress={() => Linking.openURL(`tel:${item.telefoonnummer}`)}
                   title={"Bellen"}
+                  
                   icon={"phone-outline"}
                 />
                 <Menu.Item

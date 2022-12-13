@@ -1,9 +1,11 @@
+import * as Device from "expo-device";
+import * as Notifications from "expo-notifications";
+
 import { Platform, StyleSheet, View } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import { Switch, Text } from "react-native-paper";
+
 import ApiContext from "../context/ApiContext";
-import * as Notifications from "expo-notifications";
-import * as Device from "expo-device";
 import { showMessage } from "react-native-flash-message";
 
 export type NoticifationsType = {
@@ -23,7 +25,7 @@ const SettingsScreen = () => {
     async function getNotifications() {
       const token = await registerForPushNotificationsAsync();
       setExpoPushToken(token);      
-      const { res, data } = await ApiRequest<NoticifationsType>(`/notfication/${token}/`, { method: "GET" });
+      const { res, data } = await ApiRequest<NoticifationsType>(`/notifications/${token}/`, { method: "GET" });
       if (res?.status == 200) {
         setNotifications(data);
       }
@@ -32,7 +34,7 @@ const SettingsScreen = () => {
   }, []);
   useEffect(() => {
     async function postNotifications() {
-      const { data } = await ApiRequest<NoticifationsType>(`/notfication/${expoPushToken}/`, {
+      const { data } = await ApiRequest<NoticifationsType>(`/notifications/${expoPushToken}/`, {
         method: "POST",
         body: JSON.stringify({ notifications }),
       });

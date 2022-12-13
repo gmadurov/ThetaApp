@@ -2,6 +2,7 @@
   "expo": {
     "name": "E.S.R. Theta",
     "slug": "esr-theta",
+    "owner": "gusmadvol",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./src/assets/pwa-icons/manifest-icon-512.png",
@@ -37,7 +38,7 @@
         "projectId": "9c1dbaba-dbf3-4035-b053-6cd52db7d77a"
       }
     },
-    "owner": "gusmadvol",
+
     "runtimeVersion": {
       "policy": "sdkVersion"
     },

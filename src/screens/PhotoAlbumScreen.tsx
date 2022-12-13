@@ -1,11 +1,11 @@
-import { FlatList, StyleSheet, Text, View } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { DrawerParamList } from "../navigation/DrawerNavigator";
-import { Button, Card, Chip } from "react-native-paper";
-import { Ionicons } from "@expo/vector-icons";
+import { Button, Card } from "react-native-paper";
+import { FlatList, StyleSheet, Text } from "react-native";
 import { PhotoAlbum, PhotoAlbumResponse } from "../models/PhotoAlbulms";
+import React, { useContext, useEffect, useState } from "react";
+
 import ApiContext from "../context/ApiContext";
+import { DrawerParamList } from "../navigation/Navigators";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import dayjs from "dayjs";
 
 type Props = NativeStackScreenProps<DrawerParamList, "PhotoAlbumScreen">;
@@ -63,6 +63,7 @@ const PhotoAlbumScreen = ({ route, navigation }: Props) => {
           style={styles.card}
           mode={"elevated"}
           onPress={() => {
+            // @ts-ignore
             navigation.navigate("AuthenticatedStack", {
               screen: "SinglePhotoAlbum",
               params: {

@@ -4,14 +4,16 @@ import { NewsArticle, NewsResponse } from "../models/News";
 import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
 
 import ApiContext from "../context/ApiContext";
-import { Ionicons } from "@expo/vector-icons";
-import PdfScreen from "./PdfScreen";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { DrawerParamList } from "../navigation/DrawerNavigator";
-import RenderMarkdown from "../components/RenderMarkdown";
-import { useAppTheme } from "../context/Theme";
+import { AuthenticatedStackParamsList } from "../navigation/AuthenticatedStack";
 import { DrawerActions } from "@react-navigation/native";
+import { DrawerParamList } from "../navigation/Navigators";
+import { Ionicons } from "@expo/vector-icons";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import PdfScreen from "./PdfScreen";
+import RenderMarkdown from "../components/RenderMarkdown";
 import { theme } from "../context/Theme";
+import { useAppTheme } from "../context/Theme";
+
 type Props = NativeStackScreenProps<DrawerParamList, "NewsPage">;
 
 const NewsPage = ({ route, navigation }: Props) => {
@@ -25,8 +27,7 @@ const NewsPage = ({ route, navigation }: Props) => {
   const getNewsArticles = async () => {
     setRefreshing(true);
     const { res, data } = await ApiRequest<NewsResponse>(
-      `/news/${page || ordering ? "?" : ""}${page ? "page=" + page : ""}${ordering && page ? "&" : ""}${
-        ordering ? "ordering=" + ordering : ""
+      `/news/${page || ordering ? "?" : ""}${page ? "page=" + page : ""}${ordering && page ? "&" : ""}${ordering ? "ordering=" + ordering : ""
       }`
     );
 
@@ -34,19 +35,19 @@ const NewsPage = ({ route, navigation }: Props) => {
     setNext(() =>
       data.next
         ? data?.next
-            .split("/v2/news/?")[1]
-            .split("&")
-            .filter((x) => x.includes("page="))[0]
-            .split("=")[1]
+          .split("/v2/news/?")[1]
+          .split("&")
+          .filter((x) => x.includes("page="))[0]
+          .split("=")[1]
         : undefined
     );
     setPrevious(() =>
       parseInt(next as string) > 2
         ? (data?.previous
-            ?.split("/v2/news/?")[1]
-            .split("&")
-            .filter((x) => x.includes("page="))[0]
-            .split("=")[1] as string)
+          ?.split("/v2/news/?")[1]
+          .split("&")
+          .filter((x) => x.includes("page="))[0]
+          .split("=")[1] as string)
         : undefined
     );
     setRefreshing(false);
@@ -107,6 +108,7 @@ const NewsPage = ({ route, navigation }: Props) => {
               <Chip
                 avatar={<Ionicons name={"document-attach"} size={20} />}
                 onPress={() => {
+                  //@ts-ignore
                   navigation.navigate("AuthenticatedStack", {
                     screen: "PdfScreen",
                     params: {
@@ -115,7 +117,7 @@ const NewsPage = ({ route, navigation }: Props) => {
                     },
                   });
                 }}
-                // style={styles.chip}
+              // style={styles.chip}
               >
                 Bijlage
               </Chip>

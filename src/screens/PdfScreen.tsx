@@ -1,9 +1,10 @@
-import { StyleSheet, Text, View } from "react-native";
 import React, { useCallback, useLayoutEffect, useMemo, useRef } from "react";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { AuthenticatedStackParamsList } from "../navigation/AuthenticatedStack";
-import { WebView } from "react-native-webview";
+import { StyleSheet, Text, View } from "react-native";
+
 import { Appbar } from "react-native-paper";
+import { AuthenticatedStackParamsList } from "../navigation/AuthenticatedStack";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { WebView } from "react-native-webview";
 
 const PdfReader = ({ uri }: { uri: string }) => (
   <WebView javaScriptEnabled={true} style={{ flex: 1 }} source={{ uri }} />
@@ -15,12 +16,14 @@ function PdfScreen({ route, navigation }: Props) {
       header: ({ navigation }) => (
         <Appbar.Header style={{ backgroundColor: "white" }}>
           {navigation.canGoBack() && (
+            // @ts-ignore
             <Appbar.BackAction
               onPress={() => {
                 navigation.goBack();
               }}
             />
           )}
+          {/* @ts-ignore */}
           <Appbar.Content title={route.params.type.toLocaleUpperCase()} />
         </Appbar.Header>
       ),
