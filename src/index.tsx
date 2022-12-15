@@ -21,14 +21,14 @@ import { Navigation } from "./navigation/Navigation";
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
   }),
 });
 
 function Root() {
   const [isTryingLogin, setIsTryingLogin] = useState(true);
-  const { refreshToken, setUser, setAuthTokens, setAuthTokensDecoded } = useContext(ApiContext);
+  const { refreshToken, setUser } = useContext(ApiContext);
   useLayoutEffect(() => {
     async function fetchToken() {
       const storedTokens = JSON.parse((await AsyncStorage.getItem("authTokens")) as string) as AuthToken;
@@ -76,7 +76,6 @@ function Root() {
 // "success" (green), "warning" (orange), "danger" (red), "info" (blue) and "default" (gray)
 export default function App() {
   const theme = useAppTheme();
-
 
   return (
     <PaperProvider theme={theme}>

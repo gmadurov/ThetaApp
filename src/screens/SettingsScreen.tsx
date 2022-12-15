@@ -1,12 +1,12 @@
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 
-import { Platform, StyleSheet, View } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
-import { Switch, Text } from "react-native-paper";
+import { Platform, StyleSheet, View } from "react-native";
+import { Checkbox, Switch, Text, TouchableRipple } from "react-native-paper";
 
 import ApiContext from "../context/ApiContext";
-import { showMessage } from "react-native-flash-message";
+import SettingsContext, { NotificationEnum } from "../context/SettingsContext";
 
 export type NoticifationsType = {
   fotoAlbums: boolean;
@@ -15,17 +15,22 @@ export type NoticifationsType = {
   activities: boolean;
   happen: boolean;
   news: boolean;
+  sound: NotificationEnum;
 };
 
 const SettingsScreen = () => {
   const { ApiRequest } = useContext(ApiContext);
+  const { selectedNotification, setNotification } = useContext(SettingsContext);
   const [notifications, setNotifications] = useState<NoticifationsType>({} as NoticifationsType);
   const [expoPushToken, setExpoPushToken] = useState<string>("");
   useEffect(() => {
     async function getNotifications() {
       const token = await registerForPushNotificationsAsync();
-      setExpoPushToken(token);      
-      const { res, data } = await ApiRequest<NoticifationsType>(`/notifications/${token}/`, { method: "GET" });
+      setExpoPushToken(token);
+      const { res, data } = await ApiRequest<NoticifationsType>(`/notifications/get/`, {
+        method: "POST",
+        body: JSON.stringify({ token }),
+      });
       if (res?.status == 200) {
         setNotifications(data);
       }
@@ -34,7 +39,7 @@ const SettingsScreen = () => {
   }, []);
   useEffect(() => {
     async function postNotifications() {
-      const { data } = await ApiRequest<NoticifationsType>(`/notifications/${expoPushToken}/`, {
+      const { data } = await ApiRequest<NoticifationsType>(`/notifications/`, {
         method: "POST",
         body: JSON.stringify({ notifications }),
       });
@@ -43,7 +48,6 @@ const SettingsScreen = () => {
     postNotifications();
   }, [notifications]);
 
-  useEffect(() => {}, []);
   return (
     <>
       <View style={styles.row}>
@@ -76,6 +80,36 @@ const SettingsScreen = () => {
         <Text>Happen notificaties</Text>
         <Switch value={notifications.happen} onValueChange={(e) => setNotifications({ ...notifications, happen: e })} />
       </View>
+      <Text variant="titleLarge"> Notificatie Geluiden</Text>
+      {Object.entries(NotificationEnum).map(([key, value], i) => (
+        <TouchableRipple
+          style={styles.row}
+          key={i}
+          onPress={() => {
+            setNotifications({ ...notifications, sound: value });
+            setNotification(value as NotificationEnum);
+            schedulePushNotification({
+              trigger: { seconds: 1 },
+              content: { title: key.replace("_", " "), body: "Test voor notificatie geluid", data: {}, sound: value },
+            });
+          }}
+        >
+          <>
+            <Text>{key.replace("_", " ")}</Text>
+            <Checkbox
+              status={notifications.sound == value ? "checked" : "unchecked"}
+              onPress={() => {
+                setNotification(value as NotificationEnum);
+                setNotifications({ ...notifications, sound: value });
+                schedulePushNotification({
+                  trigger: { seconds: 1 },
+                  content: { title: key.replace("_", " "), body: "Test voor notificatie geluid", data: {}, sound: value },
+                });
+              }}
+            />
+          </>
+        </TouchableRipple>
+      ))}
     </>
   );
 };
@@ -91,6 +125,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
 });
+
+async function schedulePushNotification(message: {
+  content: { title: string; body: string; data: { [key: string]: any }; sound: string };
+  trigger: { seconds: number };
+}) {
+  await Notifications.scheduleNotificationAsync(message);
+}
 
 async function registerForPushNotificationsAsync() {
   let token: string = "";
@@ -115,7 +156,11 @@ async function registerForPushNotificationsAsync() {
       alert("Failed to get push token for push notification!");
       return "";
     }
-    token = (await Notifications.getExpoPushTokenAsync()).data;
+    token = (
+      await Notifications.getExpoPushTokenAsync({
+        experienceId: "@gusmadvol/esr-theta", // do not change this it will break notifications in production
+      })
+    ).data;
     // console.log(token);
   } else {
     alert("Must use physical device for Push Notifications");

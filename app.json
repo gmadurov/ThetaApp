@@ -48,7 +48,13 @@
         {
           "icon": "./src/assets/favicon.png",
           "color": "#ffffff",
-          "sounds": ["./src/assets/sounds/klein_geil_klootje.wav"]
+          "sounds": [
+            "./src/assets/sounds/klein_geil_klootje.wav",
+            "./src/assets/sounds/Voo.wav",
+            "./src/assets/sounds/40_jaar_oud.wav",
+            "./src/assets/sounds/klein_geil_klootje.wav",
+            "./src/assets/sounds/Sexy_als_ik_rooie.wav"
+          ]
         }
       ],
       [

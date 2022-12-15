@@ -1,10 +1,9 @@
-import React from "react";
-import ChatScreen from "../screens/ChatScreen";
-import { Appbar } from "react-native-paper";
-import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { useAppTheme } from "../context/Theme";
+import { DrawerActions, useNavigation } from "@react-navigation/native";
+import React from "react";
+import { Appbar } from "react-native-paper";
 import { theme } from "../context/Theme";
+import ChatScreen from "../screens/ChatScreen";
 import { Tab } from "./Navigators";
 
 export default function TabNavigator() {
