@@ -27,7 +27,7 @@ export function Navigation({ onLayout, isTryingLogin }: { onLayout: () => Promis
     async function getNotifications() {
       const token = await registerForPushNotificationsAsync();
       setExpoPushToken(token);
-      const { res, data } = await ApiRequest(`/notifications/${token}/`, { method: "GET" });
+      const { res, data } = await ApiRequest(`/notifications/get/`, { method: "POST", body: JSON.stringify({ token }) });
       if (res?.status !== 200) {
         const { res, data } = await ApiRequest(`/notifications/`, {
           method: "POST",
@@ -56,13 +56,13 @@ export function Navigation({ onLayout, isTryingLogin }: { onLayout: () => Promis
       if (activity) {
         const { res, data } = await ApiRequest<
           | {
-            id: number;
-            author: {
               id: number;
-              name: string;
-            };
-            remark: string;
-          }
+              author: {
+                id: number;
+                name: string;
+              };
+              remark: string;
+            }
           | string
         >(`/activities/${activity}/entries/`, {
           method: "POST",
@@ -192,9 +192,11 @@ async function registerForPushNotificationsAsync() {
       alert("Failed to get push token for push notification!");
       return "";
     }
-    token = (await Notifications.getExpoPushTokenAsync({
-      experienceId: '@gusmadvol/esr-theta', // do not change this it will break notifications in production
-    })).data;
+    token = (
+      await Notifications.getExpoPushTokenAsync({
+        experienceId: "@gusmadvol/esr-theta", // do not change this it will break notifications in production
+      })
+    ).data;
     // console.log(token);
   } else {
     alert("Must use physical device for Push Notifications");
