@@ -7,6 +7,7 @@ import { Checkbox, Switch, Text, TouchableRipple } from "react-native-paper";
 
 import ApiContext from "../context/ApiContext";
 import SettingsContext, { NotificationEnum } from "../context/SettingsContext";
+import { showMessage } from "react-native-flash-message";
 
 export type NoticifationsType = {
   fotoAlbums: boolean;
@@ -16,6 +17,7 @@ export type NoticifationsType = {
   happen: boolean;
   news: boolean;
   sound: NotificationEnum;
+  announcements: boolean;
 };
 
 const SettingsScreen = () => {
@@ -39,11 +41,27 @@ const SettingsScreen = () => {
   }, []);
   useEffect(() => {
     async function postNotifications() {
-      const { data } = await ApiRequest<NoticifationsType>(`/notifications/`, {
+      const { res, data } = await ApiRequest<NoticifationsType>(`/notifications/`, {
         method: "POST",
         body: JSON.stringify({ notifications }),
       });
-      setNotifications(data);
+      if (res?.status == 200) {
+        setNotifications(data);
+        showMessage({
+          message: "Notificaties opgeslagen",
+          type: "success",
+          duration: 500,
+          floating: true,
+        });
+      } else {
+        showMessage({
+          message: "Notificaties niet opgeslagen",
+          description: data as unknown as string ,
+          type: "danger",
+          duration: 500,
+          floating: true,
+        });
+      }
     }
     postNotifications();
   }, [notifications]);
@@ -80,8 +98,15 @@ const SettingsScreen = () => {
         <Text>Happen notificaties</Text>
         <Switch value={notifications.happen} onValueChange={(e) => setNotifications({ ...notifications, happen: e })} />
       </View>
-      <Text variant="titleLarge"> Notificatie Geluiden</Text>
-      {Object.entries(NotificationEnum).map(([key, value], i) => (
+      <View style={styles.row}>
+        <Text>Mededeling notificaties</Text>
+        <Switch
+          value={notifications.announcements}
+          onValueChange={(e) => setNotifications({ ...notifications, announcements: e })}
+        />
+      </View>
+      {/* <Text variant="titleLarge"> Notificatie Geluiden</Text> */}
+      {/* {Object.entries(NotificationEnum).map(([key, value], i) => (
         <TouchableRipple
           style={styles.row}
           key={i}
@@ -109,7 +134,7 @@ const SettingsScreen = () => {
             />
           </>
         </TouchableRipple>
-      ))}
+      ))} */}
     </>
   );
 };
