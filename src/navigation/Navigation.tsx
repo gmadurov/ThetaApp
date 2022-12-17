@@ -12,6 +12,7 @@ import SettingsContext from "../context/SettingsContext";
 import { Subscription } from "expo-modules-core";
 import { showMessage } from "react-native-flash-message";
 import { string } from "prop-types";
+import { NoticifationsType } from "../screens/SettingsScreen";
 
 export function Navigation({ onLayout, isTryingLogin }: { onLayout: () => Promise<void>; isTryingLogin: boolean }) {
   const { user } = useContext(AuthContext);
@@ -27,11 +28,20 @@ export function Navigation({ onLayout, isTryingLogin }: { onLayout: () => Promis
     async function getNotifications() {
       const token = await registerForPushNotificationsAsync();
       setExpoPushToken(token);
-      const { res, data } = await ApiRequest(`/notifications/get/`, { method: "POST", body: JSON.stringify({ token }) });
+      const { res } = await ApiRequest(`/notifications/get/`, { method: "POST", body: JSON.stringify({ token }) });
       if (res?.status !== 200) {
-        const { res, data } = await ApiRequest(`/notifications/`, {
+        const { res, data } = await ApiRequest<NoticifationsType>(`/notifications/`, {
           method: "POST",
-          body: JSON.stringify({ token: token, user: user?.id }),
+          body: JSON.stringify({
+            token: token,
+            fotoAlbums: true,
+            spams: true,
+            frusts: true,
+            activities: true,
+            happen: true,
+            news: true,
+            announcements: true,
+          }),
         });
         if (res?.status !== 200) {
           showMessage({

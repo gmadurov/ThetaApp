@@ -2,7 +2,7 @@ import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 
 import React, { useContext, useEffect, useState } from "react";
-import { Platform, StyleSheet, View } from "react-native";
+import { Platform, RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 import { Checkbox, Switch, Text, TouchableRipple } from "react-native-paper";
 
 import ApiContext from "../context/ApiContext";
@@ -10,13 +10,13 @@ import SettingsContext, { NotificationEnum } from "../context/SettingsContext";
 import { showMessage } from "react-native-flash-message";
 
 export type NoticifationsType = {
-  fotoAlbums: boolean;
+  foto_albums: boolean;
   spams: boolean;
   frusts: boolean;
   activities: boolean;
   happen: boolean;
   news: boolean;
-  sound: NotificationEnum;
+  // sound: NotificationEnum;
   announcements: boolean;
 };
 
@@ -25,26 +25,39 @@ const SettingsScreen = () => {
   const { selectedNotification, setNotification } = useContext(SettingsContext);
   const [notifications, setNotifications] = useState<NoticifationsType>({} as NoticifationsType);
   const [expoPushToken, setExpoPushToken] = useState<string>("");
-  useEffect(() => {
-    async function getNotifications() {
-      const token = await registerForPushNotificationsAsync();
-      setExpoPushToken(token);
-      const { res, data } = await ApiRequest<NoticifationsType>(`/notifications/get/`, {
-        method: "POST",
-        body: JSON.stringify({ token }),
+  const [refreshing, setRefreshing] = useState(false);
+  async function getNotifications() {
+    const token = await registerForPushNotificationsAsync();
+    setExpoPushToken(token);
+    setRefreshing(true);
+    const { res, data } = await ApiRequest<NoticifationsType>(`/notifications/get/`, {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    });
+
+    if (res?.status == 200) {
+      setNotifications(data);
+    } else {
+      showMessage({
+        message: "Er is iets fout gegaan met het ophalen van notificaties",
+        type: "danger",
+        floating: true,
       });
-      if (res?.status == 200) {
-        setNotifications(data);
-      }
     }
+    setRefreshing(false);
+  }
+  useEffect(() => {
     getNotifications();
   }, []);
   useEffect(() => {
     async function postNotifications() {
+      // @ts-ignore
+      delete notifications.author;
       const { res, data } = await ApiRequest<NoticifationsType>(`/notifications/`, {
-        method: "POST",
-        body: JSON.stringify({ notifications }),
+        method: "PUT",
+        body: JSON.stringify(notifications),
       });
+
       if (res?.status == 200) {
         setNotifications(data);
         showMessage({
@@ -56,23 +69,41 @@ const SettingsScreen = () => {
       } else {
         showMessage({
           message: "Notificaties niet opgeslagen",
-          description: data as unknown as string ,
+          description: data as unknown as string,
           type: "danger",
           duration: 500,
           floating: true,
         });
       }
     }
+    // @ts-ignore
     postNotifications();
-  }, [notifications]);
+  }, [
+    notifications.activities,
+    notifications.announcements,
+    notifications.foto_albums,
+    notifications.frusts,
+    notifications.happen,
+    notifications.news,
+    notifications.spams,
+  ]);
 
   return (
-    <>
+    <ScrollView
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={() => {
+            getNotifications();
+          }}
+        />
+      }
+    >
       <View style={styles.row}>
         <Text>Foto Album notificaties</Text>
         <Switch
-          value={notifications.fotoAlbums}
-          onValueChange={(e) => setNotifications({ ...notifications, fotoAlbums: e })}
+          value={notifications.foto_albums}
+          onValueChange={(e) => setNotifications({ ...notifications, foto_albums: e })}
         />
       </View>
       <View style={styles.row}>
@@ -135,7 +166,7 @@ const SettingsScreen = () => {
           </>
         </TouchableRipple>
       ))} */}
-    </>
+    </ScrollView>
   );
 };
 
