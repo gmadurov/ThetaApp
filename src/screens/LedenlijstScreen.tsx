@@ -52,7 +52,6 @@ export const downloadContact = async (member: Member) => {
       contactType: Contacts.ContactTypes.Person,
       [Contacts.Fields.FirstName]: member.voornaam,
       [Contacts.Fields.LastName]: member.achternaam,
-      [Contacts.Fields.MiddleName]: member.voorletters,
       [Contacts.Fields.Company]: "E.S.R Theta",
       [Contacts.Fields.PhoneNumbers]: member.telefoonnummer
         ? [

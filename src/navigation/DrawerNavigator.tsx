@@ -14,6 +14,7 @@ import { Drawer } from "./Navigators";
 /** the list of screens that will be reachable via the drawer( the menu you can open to the left of the screen) */
 const DrawerNavigator = () => {
   const { user, logoutFunc } = useContext(AuthContext);
+  // console.log("user", user);
   return (
     <Drawer.Navigator
       initialRouteName="NewsPage"
@@ -90,26 +91,28 @@ const DrawerNavigator = () => {
           ),
         }}
       />
-      <Drawer.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{
-          title: "Instellingen",
-          header: ({ navigation }) => (
-            <Appbar.Header style={{ backgroundColor: theme.colors.primary }}>
-              {/* @ts-ignore */}
-              <Appbar.Action
-                onPress={() => {
-                  navigation.dispatch(DrawerActions.openDrawer);
-                }}
-                icon={"menu"}
-              />
-              {/* @ts-ignore */}
-              <Appbar.Content title="Instellingen" />
-            </Appbar.Header>
-          ),
-        }}
-      />
+      {user.roles.includes("is_member") && (
+        <Drawer.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{
+            title: "Instellingen",
+            header: ({ navigation }) => (
+              <Appbar.Header style={{ backgroundColor: theme.colors.primary }}>
+                {/* @ts-ignore */}
+                <Appbar.Action
+                  onPress={() => {
+                    navigation.dispatch(DrawerActions.openDrawer);
+                  }}
+                  icon={"menu"}
+                />
+                {/* @ts-ignore */}
+                <Appbar.Content title="Instellingen" />
+              </Appbar.Header>
+            ),
+          }}
+        />
+      )}
       {/* <Drawer.Screen
         name="WalletUpgrateScreen"
         component={WalletUpgrateScreen}
