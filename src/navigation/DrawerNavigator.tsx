@@ -63,14 +63,16 @@ const DrawerNavigator = () => {
           ),
         }}
       />
-      <Drawer.Screen
-        name="Spam/Frust"
-        component={ChatNavigator}
-        options={{
-          title: "Spam en Frusten",
-          headerShown: false,
-        }}
-      />
+      {user.roles.includes("is_member") && (
+        <Drawer.Screen
+          name="Spam/Frust"
+          component={ChatNavigator}
+          options={{
+            title: "Spam en Frusten",
+            headerShown: false,
+          }}
+        />
+      )}
       <Drawer.Screen
         name="LedenlijstScreen"
         component={LedenlijstScreen}
