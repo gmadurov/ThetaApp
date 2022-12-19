@@ -9,6 +9,7 @@ import RenderMarkdown from "../components/RenderMarkdown";
 import dayjs from "dayjs";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ChatParamList } from "../navigation/Navigators";
+import { theme } from "../context/Theme";
 type Props = NativeStackScreenProps<ChatParamList, "FrustSchrift" | "SpamSchrift">;
 
 const ChatScreen = ({ route, navigation }: Props) => {
@@ -69,7 +70,7 @@ const ChatScreen = ({ route, navigation }: Props) => {
         {item?.author.photo_url !== null ? (
           <Avatar.Image source={{ uri: baseUrl.slice(0, -3) + item?.author.photo_url }} size={avatarSize} />
         ) : (
-          <Avatar.Text size={avatarSize} label={item.author.name} />
+          <Avatar.Text size={avatarSize} label={item.author.name} style={{backgroundColor: theme.colors.thetaBrown}}/>
         )}
         <View style={styles.itemTextContentContainer}>
           <View style={styles.TopRowHeader}>

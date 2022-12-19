@@ -11,6 +11,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { showMessage } from "react-native-flash-message";
 import { useState } from "react";
+import { theme } from "../context/Theme";
 
 type MenuVisibility = {
   [key: string]: boolean | undefined;
@@ -180,7 +181,7 @@ const LedenlijstScreen = ({ route, navigation }: Props) => {
           {item?.foto !== null ? (
             <Avatar.Image source={{ uri: item?.foto }} size={avatarSize} />
           ) : (
-            <Avatar.Text size={avatarSize} label={item.voorletters} />
+            <Avatar.Text size={avatarSize} label={item.voorletters} style={{backgroundColor: theme.colors.thetaBrown}}/>
           )}
           <View style={styles.itemTextContentContainer}>
             <View style={styles.itemHeaderContainer}>
@@ -219,17 +220,16 @@ const LedenlijstScreen = ({ route, navigation }: Props) => {
                 <Menu.Item
                   onPress={() => Linking.openURL(`tel:${item.telefoonnummer}`)}
                   title={"Bellen"}
-                  
-                  icon={"phone-outline"}
+                  leadingIcon={"phone-outline"}
                 />
                 <Menu.Item
                   onPress={() => Linking.openURL(`whatsapp://send?phone=${item.telefoonnummer}`)}
                   title={"Whatsappen"}
-                  icon={"whatsapp"}
+                  leadingIcon={"whatsapp"}
                 />
                 <Menu.Item
                   onPress={() => downloadContact(item)}
-                  icon={"account-box-multiple-outline"}
+                  leadingIcon={"account-box-multiple-outline"}
                   title={"Contact Toevoegen"}
                 />
               </Menu>
@@ -276,7 +276,7 @@ const LedenlijstScreen = ({ route, navigation }: Props) => {
       <FlatList
         data={members}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item?.id?.toString()}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.container}
