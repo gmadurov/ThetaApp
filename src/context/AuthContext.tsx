@@ -53,10 +53,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (baseUrl === "") {
         if (process.env.NODE_ENV === "development") {
           setBaseUrl("https://web35.esrtheta.nl/v2");
-          setBaseUrl("https://api.esrtheta.nl/v2");
+          // setBaseUrl("https://api.esrtheta.nl/v2");
         } else if (process.env.NODE_ENV === "production") {
           setBaseUrl("https://api.esrtheta.nl/v2");
-          setBaseUrl("https://web35.esrtheta.nl/v2");
+          // setBaseUrl("https://web35.esrtheta.nl/v2");
         }
       }
       await AsyncStorage.setItem("baseUrl", baseUrl);
