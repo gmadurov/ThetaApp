@@ -28,19 +28,26 @@ export function Navigation({ onLayout, isTryingLogin }: { onLayout: () => Promis
     async function getNotifications() {
       const token = await registerForPushNotificationsAsync();
       setExpoPushToken(token);
-      const { res } = await ApiRequest(`/notifications/get/`, { method: "POST", body: JSON.stringify({ token }) });
+      const { res, data } = await ApiRequest<object>(`/notifications/get/`, { method: "POST", body: JSON.stringify({ token }) });
+      // showMessage({
+      //   message: "Je bent aangemeld voor notificatie",
+      //   description: JSON.stringify(data),
+      //   type: "info",
+      //   floating: true,
+      // });
+
       if (res?.status !== 200) {
         const { res, data } = await ApiRequest<NoticifationsType>(`/notifications/`, {
           method: "POST",
           body: JSON.stringify({
-            token: token,
-            fotoAlbums: true,
-            spams: true,
-            frusts: true,
             activities: true,
+            announcements: true,
+            foto_albums: true,
+            frusts: true,
             happen: true,
             news: true,
-            announcements: true,
+            spams: true,
+            token: token,
           }),
         });
         if (res?.status !== 200) {
@@ -52,7 +59,10 @@ export function Navigation({ onLayout, isTryingLogin }: { onLayout: () => Promis
         }
       }
     }
-    getNotifications();
+    if (user?.id) {
+      getNotifications();
+    }
+
     notificationListener.current = Notifications.addNotificationReceivedListener((notification) =>
       setNotification(notification)
     );
@@ -168,7 +178,7 @@ export function Navigation({ onLayout, isTryingLogin }: { onLayout: () => Promis
       Notifications.removeNotificationSubscription(notificationListener.current);
       Notifications.removeNotificationSubscription(responseListener.current);
     };
-  }, []);
+  }, [user.id]);
   return <>{!user?.id ? <AuthRoutes /> : <AuthenticatedRoutes isTryingLogin={isTryingLogin} />}</>;
 }
 
