@@ -105,10 +105,10 @@ export function Navigation({ onLayout, isTryingLogin }: { onLayout: () => Promis
             duration: 5000,
             floating: true,
           });
-        } else if (typeof data === "string") {
+        } else {
           showMessage({
             message: "Aanmelden voor activiteit mislukt!",
-            description: data || `Je bent wss niet ingelogt in de app, log in en probeer het opnieuw`,
+            description: JSON.stringify(data) || `Je bent wss niet ingelogt in de app, log in en probeer het opnieuw`,
             type: "danger",
             icon: "danger",
             duration: 7000,
