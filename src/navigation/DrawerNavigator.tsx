@@ -24,7 +24,7 @@ const DrawerNavigator = () => {
         <DrawerContentScrollView {...props}>
           <DrawerItemList {...props} />
           <DrawerItem
-            label="My profile"
+            label="Mijn Profiel"
             onPress={() =>
               props.navigation.navigate("AuthenticatedStack", {
                 screen: "ProfilePagina",

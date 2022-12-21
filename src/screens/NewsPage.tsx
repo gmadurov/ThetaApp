@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
-import { FlatList, StyleSheet, Text } from "react-native";
+import { Alert, FlatList, StyleSheet, Text } from "react-native";
 import { Appbar, Button, Card, Chip } from "react-native-paper";
 import { NewsArticle, NewsResponse } from "../models/News";
 
@@ -10,6 +10,7 @@ import RenderMarkdown from "../components/RenderMarkdown";
 import ApiContext from "../context/ApiContext";
 import { theme } from "../context/Theme";
 import { DrawerParamList } from "../navigation/Navigators";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type Props = NativeStackScreenProps<DrawerParamList, "NewsPage">;
 
@@ -52,7 +53,7 @@ const NewsPage = ({ route, navigation }: Props) => {
   }
   useEffect(() => {
     async function USEgetNewsArticles() {
-      setTimeout(getNewsArticles, 1000)
+      setTimeout(getNewsArticles, 1000);
     }
     if (user?.id) {
       USEgetNewsArticles();
@@ -71,11 +72,51 @@ const NewsPage = ({ route, navigation }: Props) => {
             icon={"menu"}
           />
           {/* @ts-ignore */}
-          <Appbar.Content title="News Pagina" />
+          <Appbar.Content title="Nieuws Pagina" />
         </Appbar.Header>
       ),
     });
   }, [navigation]);
+
+  useEffect(() => {
+    async function startApp() {
+      await AsyncStorage.getItem("allerted", (e, r) => {
+        if (!e&& r !== "true") {
+          Alert.alert(
+            "Mooie dingen om te weten!",
+            "Je kan contacten downloaden, belen of direct op whatsapp appen via de ledenlijst of hun profilepagina. Je kan ook foto albums bekijken en photos downloaden",
+            [
+              {
+                text: "Thanks Gus",
+                onPress: () => {
+                  AsyncStorage.setItem("allerted", "true");
+                },
+              },
+              {
+                text: "Ik will dit weer Lezen",
+                onPress: () => {
+                  AsyncStorage.setItem("allerted", "");
+                },
+              },
+            ]
+          );
+          Alert.alert(
+            "Ewa Pik",
+            "Dit is de nieuwe Thêta app. Bijna alles is af, maar er zijn nog een paar dingen die niet werken. Ik weet het en ben er mee bezig. als je iets vind dan je denkt dat ik gemist heb laat mij het weten, mijn number staat in de ledenlijst!",
+            [
+              {
+                text: "Thanks Gus",
+                onPress: () => {},
+              },
+              { text: "Voo woor de wwwcie", onPress: () => {} },
+            ]
+          );
+        }
+      });
+    }
+    startApp();
+  }, []);
+
   const renderItem = ({ item }: { item: NewsArticle }) => {
     return (
       <>

@@ -80,7 +80,6 @@ function Root() {
 // "success" (green), "warning" (orange), "danger" (red), "info" (blue) and "default" (gray)
 export default function App() {
   const theme = useAppTheme();
-
   return (
     <PaperProvider theme={theme}>
       <NavigationContainer>

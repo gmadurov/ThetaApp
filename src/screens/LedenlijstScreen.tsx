@@ -245,7 +245,7 @@ const LedenlijstScreen = ({ route, navigation }: Props) => {
         onDismiss={() => _toggleMenu("search")}
         anchor={
           <Searchbar
-            placeholder="Search Leden"
+            placeholder="Zoeken..."
             onChangeText={(query: string) => {setSearchQuery(query); setPage(undefined)}}
             onIconPress={() => _toggleMenu("search")}
             value={searchQuery}
