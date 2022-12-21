@@ -41,8 +41,8 @@ export type ApiContextType = {
   ): Promise<{ res: Response; data: TResponse }>;
   refreshToken: (authTokens: AuthToken) => Promise<AuthToken>;
   baseUrl: string;
-  setAuthTokens: React.Dispatch<React.SetStateAction<AuthToken>>
-  setAuthTokensDecoded: React.Dispatch<React.SetStateAction<AuthToken_decoded>>
+  setAuthTokens: React.Dispatch<React.SetStateAction<AuthToken>>;
+  setAuthTokensDecoded: React.Dispatch<React.SetStateAction<AuthToken_decoded>>;
 };
 
 const ApiContext = createContext<ApiContextType>({} as ApiContextType);
@@ -91,26 +91,19 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
         },
       });
       let tokens = {
-        refresh_token: authToken?.refresh_token,
+        refresh_token: authToken.refresh_token,
         user: user.data,
         access_token: data?.access_token,
       };
 
       setAuthTokens(() => tokens); // if cycling refresh tokens
+      await AsyncStorage.setItem("authTokens", JSON.stringify(tokens));
       setAuthTokensDecoded(() => ({
         refresh_token: jwtDecode(authToken?.refresh_token as string),
         user: user.data,
         access_token: jwtDecode(data.access_token as string),
       })); // if cycling refresh tokens
       setUser(user.data);
-      // await AsyncStorage.setItem(
-      //   "authTokens",
-      //   JSON.stringify({
-      //     refresh_token: authToken.refresh_token,
-      //     user: user.data,
-      //     access_token: data.access_token,
-      //   } as AuthToken)
-      // ); // if cycling refresh tokens
       return data as AuthToken;
     } else {
       // console.log(`Problem met de refresh token: ${res?.status}`);
@@ -123,7 +116,6 @@ export const ApiProvider = ({ children }: { children: React.ReactNode }) => {
         autoHide: true,
         duration: 1500,
       });
-      console.log("refresh token expired");
       await logoutFunc();
       return {} as AuthToken;
     }
