@@ -42,9 +42,7 @@ function Root() {
             setAuthTokens(storedTokens);
             await AsyncStorage.setItem("authTokens", JSON.stringify(storedTokens));
           }
-          
           await refreshToken(storedTokens);
-
           showMessage({
             message: `Authentication woord refreshed`,
             type: "info",

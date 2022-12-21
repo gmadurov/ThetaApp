@@ -1,18 +1,15 @@
-import { Appbar, Avatar, Button, Card, Chip, Menu, Searchbar, TouchableRipple } from "react-native-paper";
-import { FlatList, StyleSheet, Text, View } from "react-native";
-import { NewsArticle, NewsResponse } from "../models/News";
 import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
+import { FlatList, StyleSheet, Text } from "react-native";
+import { Appbar, Button, Card, Chip } from "react-native-paper";
+import { NewsArticle, NewsResponse } from "../models/News";
 
-import ApiContext from "../context/ApiContext";
-import { AuthenticatedStackParamsList } from "../navigation/AuthenticatedStack";
-import { DrawerActions } from "@react-navigation/native";
-import { DrawerParamList } from "../navigation/Navigators";
 import { Ionicons } from "@expo/vector-icons";
+import { DrawerActions } from "@react-navigation/native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import PdfScreen from "./PdfScreen";
 import RenderMarkdown from "../components/RenderMarkdown";
+import ApiContext from "../context/ApiContext";
 import { theme } from "../context/Theme";
-import { useAppTheme } from "../context/Theme";
+import { DrawerParamList } from "../navigation/Navigators";
 
 type Props = NativeStackScreenProps<DrawerParamList, "NewsPage">;
 
@@ -24,10 +21,11 @@ const NewsPage = ({ route, navigation }: Props) => {
   const [previous, setPrevious] = useState<string | undefined>(undefined);
   const [page, setPage] = useState<string | undefined>();
   const [ordering, setOrdering] = useState<string>("");
-  const getNewsArticles = async () => {
+  async function getNewsArticles() {
     setRefreshing(true);
     const { res, data } = await ApiRequest<NewsResponse>(
-      `/news/${page || ordering ? "?" : ""}${page ? "page=" + page : ""}${ordering && page ? "&" : ""}${ordering ? "ordering=" + ordering : ""
+      `/news/${page || ordering ? "?" : ""}${page ? "page=" + page : ""}${ordering && page ? "&" : ""}${
+        ordering ? "ordering=" + ordering : ""
       }`
     );
 
@@ -35,31 +33,31 @@ const NewsPage = ({ route, navigation }: Props) => {
     setNext(() =>
       data.next
         ? data?.next
-          .split("/v2/news/?")[1]
-          .split("&")
-          .filter((x) => x.includes("page="))[0]
-          .split("=")[1]
+            .split("/v2/news/?")[1]
+            .split("&")
+            .filter((x) => x.includes("page="))[0]
+            .split("=")[1]
         : undefined
     );
     setPrevious(() =>
       parseInt(next as string) > 2
         ? (data?.previous
-          ?.split("/v2/news/?")[1]
-          .split("&")
-          .filter((x) => x.includes("page="))[0]
-          .split("=")[1] as string)
+            ?.split("/v2/news/?")[1]
+            .split("&")
+            .filter((x) => x.includes("page="))[0]
+            .split("=")[1] as string)
         : undefined
     );
     setRefreshing(false);
-  };
-  useLayoutEffect(() => {
-    if (user?.id) {
-      getNewsArticles();
+  }
+  useEffect(() => {
+    async function USEgetNewsArticles() {
+      setTimeout(getNewsArticles, 1000)
     }
-    return () => {
-      setNewsArticles([] as NewsArticle[]);
-    };
-  }, [user?.id, page, ordering]);
+    if (user?.id) {
+      USEgetNewsArticles();
+    }
+  }, [user?.id, page, ordering, navigation]);
   const [lines, setLines] = useState({} as { [key: string]: number });
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -117,7 +115,7 @@ const NewsPage = ({ route, navigation }: Props) => {
                     },
                   });
                 }}
-              // style={styles.chip}
+                // style={styles.chip}
               >
                 Bijlage
               </Chip>

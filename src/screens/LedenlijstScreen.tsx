@@ -131,7 +131,6 @@ const LedenlijstScreen = ({ route, navigation }: Props) => {
       `/members/${page || searchQuery || ordering ? "?" : ""}${page ? "page=" + page : ""}${page && searchQuery ? "&" : ""}${searchQuery ? "searchstring=" + searchQuery : ""
       }${ordering && (searchQuery || page) ? "&" : ""}${ordering ? "ordering=" + ordering : ""}`
     );
-
     setMembers(() => data.results);
     setNext(() =>
       data.next
@@ -247,7 +246,7 @@ const LedenlijstScreen = ({ route, navigation }: Props) => {
         anchor={
           <Searchbar
             placeholder="Search Leden"
-            onChangeText={(query: string) => setSearchQuery(query)}
+            onChangeText={(query: string) => {setSearchQuery(query); setPage(undefined)}}
             onIconPress={() => _toggleMenu("search")}
             value={searchQuery}
             style={styles.searchbar}
