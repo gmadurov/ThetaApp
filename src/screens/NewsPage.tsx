@@ -41,7 +41,7 @@ const NewsPage = ({ route, navigation }: Props) => {
         : undefined
     );
     setPrevious(() =>
-      parseInt(next as string) > 2
+      data?.previous
         ? (data?.previous
             ?.split("/v2/news/?")[1]
             .split("&")
@@ -81,7 +81,7 @@ const NewsPage = ({ route, navigation }: Props) => {
   useEffect(() => {
     async function startApp() {
       await AsyncStorage.getItem("allerted", (e, r) => {
-        if (!e&& r !== "true") {
+        if (!e && r !== "true") {
           Alert.alert(
             "Mooie dingen om te weten!",
             "Je kan contacten downloaden, belen of direct op whatsapp appen via de ledenlijst of hun profilepagina. Je kan ook foto albums bekijken en photos downloaden",

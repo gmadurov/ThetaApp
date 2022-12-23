@@ -10,6 +10,7 @@ import PhotoAlbumScreen from "../screens/PhotoAlbumScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import ChatNavigator from "./ChatNavigator";
 import { Drawer } from "./Navigators";
+import ActivityScreen from "../screens/ActivityScreen";
 
 /** the list of screens that will be reachable via the drawer( the menu you can open to the left of the screen) */
 const DrawerNavigator = () => {
@@ -89,6 +90,26 @@ const DrawerNavigator = () => {
               />
               {/* @ts-ignore */}
               <Appbar.Content title="Ledenlijst" />
+            </Appbar.Header>
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="Activities"
+        component={ActivityScreen}
+        options={{
+          title: "Activiteiten",
+          header: ({ navigation }) => (
+            <Appbar.Header style={{ backgroundColor: theme.colors.primary }}>
+              {/* @ts-ignore */}
+              <Appbar.Action
+                onPress={() => {
+                  navigation.dispatch(DrawerActions.openDrawer);
+                }}
+                icon={"menu"}
+              />
+              {/* @ts-ignore */}
+              <Appbar.Content title="Activiteiten" />
             </Appbar.Header>
           ),
         }}

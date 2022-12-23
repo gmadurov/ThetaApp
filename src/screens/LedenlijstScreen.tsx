@@ -52,18 +52,19 @@ export const downloadContact = async (member: Member) => {
       name: member.voornaam,
       contactType: Contacts.ContactTypes.Person,
       [Contacts.Fields.FirstName]: member.voornaam,
-      [Contacts.Fields.LastName]: member.achternaam,
+      [Contacts.Fields.MiddleName]: member.tussenvoegsel, // not optimal but its the only way
+      [Contacts.Fields.LastName]: member.achternaam, 
       [Contacts.Fields.Company]: "E.S.R Theta",
       [Contacts.Fields.PhoneNumbers]: member.telefoonnummer
         ? [
-          {
-            number: member.telefoonnummer,
-            isPrimary: true,
-            digits: "1234567890",
-            countryCode: "PA",
-            label: "main",
-          },
-        ]
+            {
+              number: member.telefoonnummer,
+              isPrimary: true,
+              digits: "1234567890",
+              countryCode: "PA",
+              label: "main",
+            },
+          ]
         : [undefined],
       [Contacts.Fields.Emails]: member.emailadres ? [{ email: member.emailadres }] : undefined,
     };
@@ -128,26 +129,27 @@ const LedenlijstScreen = ({ route, navigation }: Props) => {
   const getMembers = async () => {
     setRefreshing(true);
     const { res, data } = await ApiRequest<MemberRespose>(
-      `/members/${page || searchQuery || ordering ? "?" : ""}${page ? "page=" + page : ""}${page && searchQuery ? "&" : ""}${searchQuery ? "searchstring=" + searchQuery : ""
+      `/members/${page || searchQuery || ordering ? "?" : ""}${page ? "page=" + page : ""}${page && searchQuery ? "&" : ""}${
+        searchQuery ? "searchstring=" + searchQuery : ""
       }${ordering && (searchQuery || page) ? "&" : ""}${ordering ? "ordering=" + ordering : ""}`
     );
     setMembers(() => data.results);
     setNext(() =>
       data.next
         ? data?.next
-          .split("/v2/members/?")[1]
-          .split("&")
-          .filter((x) => x.includes("page="))[0]
-          .split("=")[1]
+            .split("/v2/members/?")[1]
+            .split("&")
+            .filter((x) => x.includes("page="))[0]
+            .split("=")[1]
         : undefined
     );
     setPrevious(() =>
-      parseInt(next as string) > 2
+      data?.previous
         ? (data?.previous
-          ?.split("/v2/members/?")[1]
-          .split("&")
-          .filter((x) => x.includes("page="))[0]
-          .split("=")[1] as string)
+            ?.split("/v2/members/?")[1]
+            .split("&")
+            .filter((x) => x.includes("page="))[0]
+            .split("=")[1] as string)
         : undefined
     );
     setRefreshing(false);
@@ -180,12 +182,12 @@ const LedenlijstScreen = ({ route, navigation }: Props) => {
           {item?.foto !== null ? (
             <Avatar.Image source={{ uri: item?.foto }} size={avatarSize} />
           ) : (
-            <Avatar.Text size={avatarSize} label={item.voorletters} style={{backgroundColor: theme.colors.thetaBrown}}/>
+            <Avatar.Text size={avatarSize} label={item.voorletters} style={{ backgroundColor: theme.colors.thetaBrown }} />
           )}
           <View style={styles.itemTextContentContainer}>
             <View style={styles.itemHeaderContainer}>
               <Text style={[styles.header]} ellipsizeMode="tail" numberOfLines={1}>
-                {item.voornaam} {item.achternaam}
+                {item.voornaam} {item.tussenvoegsel} {item.achternaam}
               </Text>
             </View>
             <View style={styles.itemMessageContainer}>
@@ -246,7 +248,10 @@ const LedenlijstScreen = ({ route, navigation }: Props) => {
         anchor={
           <Searchbar
             placeholder="Zoeken..."
-            onChangeText={(query: string) => {setSearchQuery(query); setPage(undefined)}}
+            onChangeText={(query: string) => {
+              setSearchQuery(query);
+              setPage(undefined);
+            }}
             onIconPress={() => _toggleMenu("search")}
             value={searchQuery}
             style={styles.searchbar}

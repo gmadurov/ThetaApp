@@ -36,7 +36,7 @@ const PhotoAlbumScreen = ({ route, navigation }: Props) => {
         : undefined
     );
     setPrevious(() =>
-      parseInt(next as string) > 2
+      data?.previous
         ? (data?.previous
             ?.split("/v2/photoalbums/?")[1]
             .split("&")
@@ -95,8 +95,6 @@ const PhotoAlbumScreen = ({ route, navigation }: Props) => {
     );
   };
 
-  
-
   return (
     <>
       <FlatList
@@ -147,7 +145,7 @@ const styles = StyleSheet.create({
     margin: 4,
     paddingBottom: 9,
   },
-  container:{
-    paddingBottom: 50
-  }
+  container: {
+    paddingBottom: 50,
+  },
 });
