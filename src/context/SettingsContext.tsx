@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 /** provides Settings */
 interface SettingsContextType {
@@ -27,6 +28,73 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
   const [defaultHapQuantity, setDefaultHapQuantity] = useState(1);
   const [defaultActivityComment, setDefaultActivityComment] = useState("");
   const [selectedNotification, setNotification] = useState<NotificationEnum>(NotificationEnum.Voo);
+
+  useEffect(() => {
+    async function set() {
+      if (defaultHapComment !== "") {
+        await AsyncStorage.setItem("defaultHapComment", defaultHapComment);
+      }
+    }
+    set();
+  }, [defaultHapComment]);
+
+  useEffect(() => {
+    async function set() {
+      if (defaultHapComment === "") {
+        await AsyncStorage.getItem("defaultHapComment", async (e, r) => {
+          if (r !== null && r !== undefined && r !== "null") {
+            setDefaultHapComment(r);
+          }
+        });
+      }
+    }
+    set();
+  }, []);
+
+  useEffect(() => {
+    async function set() {
+      if (defaultActivityComment !== "") {
+        await AsyncStorage.setItem("defaultActivityComment", defaultActivityComment);
+      }
+    }
+    set();
+  }, []);
+
+  useEffect(() => {
+    async function set() {
+      if (defaultActivityComment === "") {
+        await AsyncStorage.getItem("defaultActivityComment", async (e, r) => {
+          if (r !== null && r !== undefined && r !== "null") {
+            setDefaultActivityComment(r);
+          }
+        });
+      }
+    }
+    set();
+  }, []);
+
+  useEffect(() => {
+    async function set() {
+      if (defaultHapQuantity !== 1) {
+        await AsyncStorage.setItem("defaultHapQuantity", defaultHapQuantity.toString());
+      }
+    }
+    set();
+  }, [defaultHapQuantity]);
+
+  useEffect(() => {
+    async function set() {
+      if (defaultHapQuantity === 1) {
+        await AsyncStorage.getItem("defaultHapQuantity", async (e, r) => {
+          if (r !== null && r !== undefined && r !== "null") {
+            console.log(r)
+            setDefaultHapQuantity(parseInt(r));
+          }
+        });
+      }
+    }
+    set();
+  }, []);
 
   const data = {
     defaultHapQuantity,

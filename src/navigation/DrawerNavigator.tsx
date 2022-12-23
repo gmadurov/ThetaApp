@@ -44,6 +44,23 @@ const DrawerNavigator = () => {
           title: "Nieuws",
         }}
       />
+      {user.roles.includes("is_member") && (
+        <Drawer.Screen
+          name="Spam/Frust"
+          component={ChatNavigator}
+          options={{
+            title: "Spam en Frusten",
+            headerShown: false,
+          }}
+        />
+      )}
+      <Drawer.Screen
+        name="Activities"
+        component={ActivitiesScreen}
+        options={{
+          title: "Activiteiten",
+        }}
+      />
       <Drawer.Screen
         name="PhotoAlbumScreen"
         component={PhotoAlbumScreen}
@@ -64,16 +81,6 @@ const DrawerNavigator = () => {
           ),
         }}
       />
-      {user.roles.includes("is_member") && (
-        <Drawer.Screen
-          name="Spam/Frust"
-          component={ChatNavigator}
-          options={{
-            title: "Spam en Frusten",
-            headerShown: false,
-          }}
-        />
-      )}
       <Drawer.Screen
         name="LedenlijstScreen"
         component={LedenlijstScreen}
@@ -93,11 +100,6 @@ const DrawerNavigator = () => {
             </Appbar.Header>
           ),
         }}
-      />
-      <Drawer.Screen
-        name="Activities"
-        component={ActivitiesScreen}
-        
       />
       {user.roles.includes("is_member") && (
         <Drawer.Screen

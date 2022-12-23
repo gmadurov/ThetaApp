@@ -20,7 +20,7 @@ const PhotoAlbumScreen = ({ route, navigation }: Props) => {
   const getObjects = async () => {
     setRefreshing(true);
     const { res, data } = await ApiRequest<PhotoAlbumResponse>(
-      `/photoalbums/${page || ordering ? "?" : ""}${page ? "page=" + page : ""}${ordering && page ? "&" : ""}${
+      `/photoalbums/?page_size=30&${page ? "page=" + page : ""}${ordering && page ? "&" : ""}${
         ordering ? "ordering=" + ordering : ""
       }`
     );

@@ -27,7 +27,7 @@ const ChatScreen = ({ route, navigation }: Props) => {
   const getChat = async () => {
     setRefreshing(true);
     const { res, data } = await ApiRequest<SpamResponse>(
-      `/${!!spam ? "spams" : ""}${!!frust ? "frusts" : ""}/${page || ordering ? "?" : ""}${page ? "page=" + page : ""}
+      `/${!!spam ? "spams" : ""}${!!frust ? "frusts" : ""}/?page_size=40&${page ? "page=" + page : ""}
       ${ordering && page ? "&" : ""}${ordering ? "order_by=" + ordering : ""}`
     );
     // console.log(data.results);

@@ -25,7 +25,7 @@ const NewsPage = ({ route, navigation }: Props) => {
   async function getNewsArticles() {
     setRefreshing(true);
     const { res, data } = await ApiRequest<NewsResponse>(
-      `/news/${page || ordering ? "?" : ""}${page ? "page=" + page : ""}${ordering && page ? "&" : ""}${
+      `/news/?page_size=15&${page ? "page=" + page : ""}${ordering && page ? "&" : ""}${
         ordering ? "ordering=" + ordering : ""
       }`
     );

@@ -129,7 +129,7 @@ const LedenlijstScreen = ({ route, navigation }: Props) => {
   const getMembers = async () => {
     setRefreshing(true);
     const { res, data } = await ApiRequest<MemberRespose>(
-      `/members/${page || searchQuery || ordering ? "?" : ""}${page ? "page=" + page : ""}${page && searchQuery ? "&" : ""}${
+      `/members/?page_size=40&${page ? "page=" + page : ""}${page && searchQuery ? "&" : ""}${
         searchQuery ? "searchstring=" + searchQuery : ""
       }${ordering && (searchQuery || page) ? "&" : ""}${ordering ? "ordering=" + ordering : ""}`
     );
