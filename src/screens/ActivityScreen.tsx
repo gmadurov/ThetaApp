@@ -1,48 +1,38 @@
-import * as Contacts from "expo-contacts";
+import React, { useContext, useEffect, useLayoutEffect } from "react";
+import { Animated, RefreshControl, ScrollView, StyleSheet, View } from "react-native";
+import { Appbar, DataTable, Switch, Text, TextInput } from "react-native-paper";
+import { ActivityModel, Entry } from "../models/Activity";
 
-import { Avatar, Button, Menu, Searchbar, Switch, Text, TouchableRipple } from "react-native-paper";
-import { FlatList, Linking, StyleSheet, View } from "react-native";
-import { ActivityModel, ActivityResponse, Entry } from "../models/Activity";
-import React, { useContext, useEffect } from "react";
-
-import ApiContext from "../context/ApiContext";
-import { DrawerParamList } from "../navigation/Navigators";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { showMessage } from "react-native-flash-message";
+import dayjs from "dayjs";
 import { useState } from "react";
-import { theme } from "../context/Theme";
+import { showMessage } from "react-native-flash-message";
+import ApiContext from "../context/ApiContext";
 import SettingsContext from "../context/SettingsContext";
+import { theme } from "../context/Theme";
+import { AuthenticatedStackParamsList } from "../navigation/AuthenticatedStack";
 
-type Props = NativeStackScreenProps<DrawerParamList, "Activities">;
+type Props = NativeStackScreenProps<AuthenticatedStackParamsList, "ActivityScreen">;
 
 type buttonType = {
   [key: number]: boolean;
 };
 const ActivityScreen = ({ route, navigation }: Props) => {
+  const { id } = route.params;
+
   const { ApiRequest, user } = useContext(ApiContext);
   const { defaultActivityComment } = useContext(SettingsContext);
-  const [activities, setActivities] = useState<ActivityModel[]>([] as ActivityModel[]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [next, setNext] = useState<string | undefined>(undefined);
+  const [activity, setActivity] = useState<ActivityModel>({} as ActivityModel);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [previous, setPrevious] = useState<string | undefined>(undefined);
-  const [page, setPage] = useState<string | undefined>();
-  const [ordering, setOrdering] = useState<string>("");
-  const [status, setStatus] = useState<string>("future");
+  const [remark, setRemark] = useState<string>("");
   const [buttonDisable, setButtonDisable] = useState<buttonType>({} as buttonType);
   const _disabled = (activity: ActivityModel) => !!buttonDisable[activity.id] || false;
   const _toggleDisable = (activity: ActivityModel) =>
     setButtonDisable((prev) => ({ ...prev, [activity.id]: !prev[activity.id] }));
-  const getMembers = async () => {
+  const getObjects = async () => {
     setRefreshing(true);
-    const { res, data } = await ApiRequest<ActivityResponse>(
-      `/activities/${page || searchQuery || ordering || status ? "?" : ""}${status ? "status=" + status : ""}${
-        status && (ordering || searchQuery || page) ? "&" : ""
-      }${page ? "page=" + page : ""}${page && searchQuery ? "&" : ""}${searchQuery ? "searchstring=" + searchQuery : ""}${
-        ordering && (searchQuery || page) ? "&" : ""
-      }${ordering ? "ordering=" + ordering : ""}`
-    );
+    const { res, data } = await ApiRequest<ActivityModel>(`/activities/${id}/`);
     // console.log(
     //   `/activities/${page || searchQuery || ordering || status ? "?" : ""}${status ? "status=" + status : ""}${
     //     status && (ordering || searchQuery || page) ? "&" : ""
@@ -50,35 +40,17 @@ const ActivityScreen = ({ route, navigation }: Props) => {
     //     ordering && (searchQuery || page) ? "&" : ""
     //   }${ordering ? "ordering=" + ordering : ""}`
     // );
-    setActivities(() => data.results);
-    setNext(() =>
-      data.next
-        ? data?.next
-            .split("/v2/activities/?")[1]
-            .split("&")
-            .filter((x) => x.includes("page="))[0]
-            .split("=")[1]
-        : undefined
-    );
-    setPrevious(() =>
-      data?.previous
-        ? (data?.previous
-            ?.split("/v2/activities/?")[1]
-            .split("&")
-            .filter((x) => x.includes("page="))[0]
-            .split("=")[1] as string)
-        : undefined
-    );
+    setActivity(() => data);
     setRefreshing(false);
   };
   useEffect(() => {
     if (user?.id) {
-      setTimeout(getMembers, 500);
+      setTimeout(getObjects, 500);
     }
     return () => {
-      setActivities([] as ActivityModel[]);
+      setActivity({} as ActivityModel);
     };
-  }, [user?.id, searchQuery, page, ordering]);
+  }, [user?.id, navigation, id]);
 
   async function SignUp(activity: ActivityModel) {
     _toggleDisable(activity);
@@ -88,13 +60,13 @@ const ActivityScreen = ({ route, navigation }: Props) => {
         author: {
           id: user?.id,
         },
-        remark: defaultActivityComment || "",
+        remark: remark || defaultActivityComment,
       }),
     });
 
     if (res.status === 200 || res.status === 201) {
       await ApiRequest<ActivityModel>(`/activities/${activity.id}/`, { method: "GET" }).then((response) =>
-        setActivities((acts) => acts.map((act) => (act.id === activity.id ? response.data : act)))
+        setActivity(response.data)
       );
       showMessage({
         message: "Ingeschreven voor activiteit!",
@@ -116,6 +88,7 @@ const ActivityScreen = ({ route, navigation }: Props) => {
       });
     }
     _toggleDisable(activity);
+    setRemark("");
   }
 
   async function SignMeOut(id: number, activity: ActivityModel) {
@@ -125,7 +98,7 @@ const ActivityScreen = ({ route, navigation }: Props) => {
     });
     if (res.status === 200) {
       await ApiRequest<ActivityModel>(`/activities/${activity.id}/`, { method: "GET" }).then((response) =>
-        setActivities((acts) => acts.map((act) => (act.id === activity.id ? response.data : act)))
+        setActivity(response.data)
       );
       showMessage({
         message: "Uitgeschreven voor activiteit!",
@@ -150,108 +123,134 @@ const ActivityScreen = ({ route, navigation }: Props) => {
     _toggleDisable(activity);
   }
 
-  const renderItem = ({ item }: { item: ActivityModel }) => {
-    return (
-      <TouchableRipple
-      // onPress={() =>
-      // @ts-ignore
-      //   navigation.navigate("AuthenticatedStack", {
-      //     screen: "ProfilePagina",
-      //     params: { id: item?.id },
-      //   })
-      // }
-      >
-        <View style={styles.itemContainer}>
-          <View style={styles.itemTextContentContainer}>
-            <View style={styles.itemHeaderContainer}>
-              {/* style={[styles.header]} */}
-              <Text ellipsizeMode="tail" numberOfLines={1} variant="titleMedium">
-                {item.title}
-              </Text>
-            </View>
-            <View style={styles.itemMessageContainer}>
-              <View style={styles.flex}>
-                <Text ellipsizeMode="tail" numberOfLines={1} variant="bodyMedium">
-                  {"€" + item.costs} {item.description}
-                </Text>
-                <Text numberOfLines={1} ellipsizeMode="tail" variant="bodySmall">
-                  {item.no_of_entries}/{item.max_participants === -1 ? <Ionicons name="infinite" /> : item.max_participants}{" "}
-                  | {item.no_of_reserve}
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          <Switch
-            onValueChange={(value) =>
-              value
-                ? SignUp(item)
-                : SignMeOut(
-                    item.entries.find((entry) => entry.author.id === user?.id)?.id ||
-                      (item.reserve.find((entry) => entry.author.id === user?.id)?.id as number),
-                    item
-                  )
-            }
-            value={
-              item.entries.some((entry) => entry.author.id === user?.id) ||
-              item.reserve.some((entry) => entry.author.id === user?.id)
-                ? true
-                : false
-            }
-            color={
-              item.entries.some((entry) => entry.author.id === user?.id)
-                ? "green"
-                : item.reserve.some((entry) => entry.author.id === user?.id)
-                ? "orange"
-                : "red"
-            }
-            disabled={_disabled(item)}
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      header: ({ navigation }) => (
+        <Appbar.Header style={{ backgroundColor: theme.colors.primary }}>
+          {/* @ts-ignore */}
+          <Appbar.BackAction
+            onPress={() => {
+              navigation.goBack();
+            }}
           />
-        </View>
-      </TouchableRipple>
+          {/* @ts-ignore */}
+          <Appbar.Content title={activity.title} />
+        </Appbar.Header>
+      ),
+    });
+  }, [navigation, activity]);
+  const Counts = ({ count, title }: { count: string | number; title: string }) => {
+    return (
+      <View>
+        <Text style={[styles.tabLabelText, { color: "black" }]}>{count}</Text>
+        <Text style={[styles.tabLabelNumber, { color: "black" }]}>{title}</Text>
+      </View>
     );
   };
   return (
     <>
-      <FlatList
-        data={activities}
-        renderItem={renderItem}
-        keyExtractor={(item) => item?.id?.toString()}
+      <View style={[styles.socialRow, { justifyContent: "space-evenly" }]}>
+        <Counts
+          count={`${activity.no_of_entries || 0}/${
+            activity.max_participants === -1 ? '∞' : activity.max_participants || 0
+          } | ${activity.no_of_reserve || 0}`}
+          title="Aanmeldingen"
+        />
+        <Counts count={["0", null, undefined].includes(activity.costs) ? "Gratis" : "€" + activity.costs} title="Kost" />
+      </View>
+      <View style={styles.socialRow}>
+        <Counts count={dayjs(activity.event_date).format("D-M-YYYY | hh:mmA")} title="Event Datum" />
+      </View>
+      <View style={styles.socialRow}>
+        <Counts count={dayjs(activity.registration_close).format("D-M-YYYY | hh:mmA")} title="Sluiting" />
+      </View>
+      <ScrollView
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.container}
-        refreshing={refreshing}
-        onRefresh={async () => {
-          setRefreshing(true);
-          await getMembers();
-          setRefreshing(false);
-        }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              getObjects();
+            }}
+          />
+        }
         // onEndReached={getMembers}
         // onEndReachedThreshold={0.2}
-        ListHeaderComponent={
-          <>
-            {previous !== undefined && (
-              <Button
-                onPress={() => {
-                  setPage(() => previous);
-                }}
-                disabled={previous === undefined}
-              >
-                Previous
-              </Button>
-            )}
-          </>
-        }
-        ListFooterComponent={
-          <>
-            {next !== undefined && (
-              <Button onPress={() => setPage(() => next)} disabled={next === undefined}>
-                next
-              </Button>
-            )}
-          </>
-        }
-      />
+      >
+        <Text>{activity.description}</Text>
+        {new Date(activity.registration_close).getTime() > new Date().getTime() && (
+          <View style={[styles.socialRow, { justifyContent: "space-evenly" }]}>
+            {/* @ts-ignore */}
+            <TextInput
+              style={{ flex: 1 }}
+              mode={"outlined"}
+              label="Opmerking"
+              value={remark}
+              onChangeText={(text) => setRemark(text)}
+            />
+            <Switch
+              onValueChange={(value) =>
+                value
+                  ? SignUp(activity)
+                  : SignMeOut(
+                      activity.entries?.find((entry) => entry.author.id === user?.id)?.id ||
+                        (activity.reserve?.find((entry) => entry.author.id === user?.id)?.id as number),
+                      activity
+                    )
+              }
+              value={
+                activity.entries?.some((entry) => entry.author.id === user?.id) ||
+                activity.reserve?.some((entry) => entry.author.id === user?.id)
+                  ? true
+                  : false
+              }
+              color={
+                activity.entries?.some((entry) => entry.author.id === user?.id)
+                  ? "green"
+                  : activity.reserve?.some((entry) => entry.author.id === user?.id)
+                  ? "orange"
+                  : "red"
+              }
+              disabled={_disabled(activity)}
+            />
+          </View>
+        )}
+        <Text variant="titleLarge">
+          Inschrijvingen{" "}
+          {`${activity.no_of_entries || 0}/${
+            activity.max_participants === -1 ? '∞'  : activity.max_participants || 0
+          } `}
+        </Text>
+        <DataTable>
+          <DataTable.Header>
+            <DataTable.Title>Ingeschreven</DataTable.Title>
+            <DataTable.Title>Opmerking</DataTable.Title>
+          </DataTable.Header>
+          {activity?.entries?.map((entry) => (
+            // @ts-ignore
+            <DataTable.Row>
+              <DataTable.Cell>{entry.author.name}</DataTable.Cell>
+              <DataTable.Cell>{entry.remark}</DataTable.Cell>
+            </DataTable.Row>
+          ))}
+        </DataTable>
+        <Text variant="titleLarge">Reserve {activity.no_of_reserve}</Text>
+        <DataTable>
+          <DataTable.Header>
+            <DataTable.Title>Reserve</DataTable.Title>
+            <DataTable.Title>Opmerking</DataTable.Title>
+          </DataTable.Header>
+          {activity?.reserve?.map((entry) => (
+            // @ts-ignore
+            <DataTable.Row>
+              <DataTable.Cell>{entry.author.name}</DataTable.Cell>
+              <DataTable.Cell>{entry.remark}</DataTable.Cell>
+            </DataTable.Row>
+          ))}
+        </DataTable>
+      </ScrollView>
     </>
   );
 };
@@ -263,9 +262,25 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 60,
   },
+  socialRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   avatar: {
     marginRight: 16,
     marginTop: 8,
+  },
+  tabLabelNumber: {
+    color: "gray",
+    fontSize: 12.5,
+    textAlign: "center",
+  },
+  tabLabelText: {
+    color: "black",
+    fontSize: 22.5,
+    fontWeight: "600",
+    textAlign: "center",
   },
   flex: {
     flex: 1,

@@ -4,14 +4,16 @@ import { theme } from "../context/Theme";
 import PdfScreen from "../screens/PdfScreen";
 import PhotoAlbumScreen_single from "../screens/PhotoAlbumScreen_single";
 import ProfileScreen from "../screens/ProfileScreen";
+import ActivityScreen from "../screens/ActivityScreen";
 
 export type AuthenticatedStackParamsList = {
   ProfilePagina: { id: number } | undefined;
   PdfScreen: { uri: string; type: string };
   SinglePhotoAlbum: { id: number };
+  ActivityScreen: { id: number };
 };
 
-const Stack = createNativeStackNavigator<AuthenticatedStackParamsList>();
+export const Stack = createNativeStackNavigator<AuthenticatedStackParamsList>();
 
 export default function AuthenticatedStack() {
   return (
@@ -26,6 +28,12 @@ export default function AuthenticatedStack() {
       <Stack.Screen
         name="ProfilePagina"
         component={ProfileScreen}
+        // children={() => <ProfileScreen />}
+        options={{}}
+      />
+      <Stack.Screen
+        name="ActivityScreen"
+        component={ActivityScreen}
         // children={() => <ProfileScreen />}
         options={{}}
       />
