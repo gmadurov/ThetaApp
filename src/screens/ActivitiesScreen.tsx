@@ -15,7 +15,7 @@ import { theme } from "../context/Theme";
 import SettingsContext from "../context/SettingsContext";
 import { DrawerActions } from "@react-navigation/native";
 
-type Props = NativeStackScreenProps<DrawerParamList, "Activity">;
+type Props = NativeStackScreenProps<DrawerParamList, "Activities">;
 
 type buttonType = {
   [key: number]: boolean;
