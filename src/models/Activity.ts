@@ -3,37 +3,45 @@ import { SuccessResponse } from "./Responses";
 export interface ActivityResponse extends SuccessResponse{
     results:  ActivityModel[];
 }
-
 export interface ActivityModel {
-    description:        string;
-    max_participants:   number;
+    date_edited:        null;
+    title:              string;
+    costs:              string;
     author:             Author;
-    entries:            Entry[];
+    registration_close: Date;
     no_of_reserve:      number;
     event_date:         Date;
     no_of_entries:      number;
-    title:              string;
-    reserve:            any[];
+    description:        string;
     photo_url:          null;
-    registration_close: Date;
+    reserve:            any[];
+    max_participants:   number;
+    organizers:         Organizer[];
+    entries:            Entry[];
     id:                 number;
-    costs:              string;
-    date_edited:        null;
 }
 
 export interface Author {
     last_name:   string;
     name:        string;
     first_name:  string;
-    id:          number;
     middle_name: string;
+    id:          number;
 }
 
-
 export interface Entry {
-    remark:   string;
-    author:   Author;
-    pub_date: Date;
+    pub_date:  Date;
+    author:    Author;
+    payed:     boolean;
+    remark:    string;
+    activity:  number;
+    id:        number;
+    showed_up: boolean;
+}
+
+export interface Organizer {
     activity: number;
+    remark:   string;
     id:       number;
+    author:   Author;
 }
