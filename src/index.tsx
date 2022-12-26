@@ -17,6 +17,7 @@ import ApiContext from "./context/ApiContext";
 import { FullProvider } from "./context/FullContext";
 import { useAppTheme } from "./context/Theme";
 import { Navigation } from "./navigation/Navigation";
+import AuthContext from "./context/AuthContext";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -28,29 +29,32 @@ Notifications.setNotificationHandler({
 
 function Root() {
   const [isTryingLogin, setIsTryingLogin] = useState(true);
+  const { logoutFunc, setAuthTokens } = useContext(AuthContext);
   const { refreshToken, setUser } = useContext(ApiContext);
   useLayoutEffect(() => {
     async function fetchToken() {
-      const storedTokens = JSON.parse((await AsyncStorage.getItem("authTokens")) as string) as AuthToken;
-      if (storedTokens) {
-        setUser(storedTokens.user);
-        if ((jwt_decode(storedTokens.access_token as string) as TokenInfo).exp < Date.now()) {
-          setIsTryingLogin(false);
-        }
-        if ((jwt_decode(storedTokens.refresh_token as string) as TokenInfo).exp < Date.now()) {
+      await AsyncStorage.getItem("authTokens", async (e, r) => {
+        if (r !== null && r !== undefined && r !== "null") {
+          let storedTokens = JSON.parse(r) as AuthToken;
+          if ((jwt_decode(storedTokens.access_token as string) as TokenInfo).exp < Date.now()) {
+            setUser(storedTokens.user);
+            setIsTryingLogin(false);
+            setAuthTokens(storedTokens);
+            await AsyncStorage.setItem("authTokens", JSON.stringify(storedTokens));
+          }
           await refreshToken(storedTokens);
+          showMessage({
+            message: `Authentication woord refreshed`,
+            type: "info",
+            floating: true,
+            hideStatusBar: true,
+            autoHide: true,
+            duration: 1500,
+          });
+        } else {
+          await logoutFunc();
         }
-        showMessage({
-          message: `Authentication woord refreshed`,
-          description: ``,
-          type: "info",
-          floating: true,
-          hideStatusBar: true,
-          autoHide: true,
-          duration: 1500,
-        });
-        await refreshToken(storedTokens);
-      }
+      });
       setIsTryingLogin(false);
     }
     fetchToken();
@@ -76,7 +80,6 @@ function Root() {
 // "success" (green), "warning" (orange), "danger" (red), "info" (blue) and "default" (gray)
 export default function App() {
   const theme = useAppTheme();
-
   return (
     <PaperProvider theme={theme}>
       <NavigationContainer>

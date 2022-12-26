@@ -38,19 +38,19 @@ export default function TabNavigator() {
       })}
     >
       <Tab.Screen
-        name="FrustSchrift"
-        component={ChatScreen}
-        options={{
-          title: "Frustschrift",
-          header: () => <Header title="Frustschrift" />,
-        }}
-      />
-      <Tab.Screen
         name="SpamSchrift"
         component={ChatScreen}
         options={{
           title: "Spamschrift",
           header: () => <Header title="Spamschrift" />,
+        }}
+      />
+      <Tab.Screen
+        name="FrustSchrift"
+        component={ChatScreen}
+        options={{
+          title: "Frustschrift",
+          header: () => <Header title="Frustschrift" />,
         }}
       />
     </Tab.Navigator>

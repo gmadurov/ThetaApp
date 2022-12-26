@@ -3,7 +3,7 @@ import * as Notifications from "expo-notifications";
 
 import React, { useContext, useEffect, useState } from "react";
 import { Platform, RefreshControl, ScrollView, StyleSheet, View } from "react-native";
-import { Checkbox, Switch, Text, TouchableRipple } from "react-native-paper";
+import { Checkbox, Switch, Text, TextInput, TouchableRipple } from "react-native-paper";
 
 import ApiContext from "../context/ApiContext";
 import SettingsContext, { NotificationEnum } from "../context/SettingsContext";
@@ -22,7 +22,16 @@ export type NoticifationsType = {
 
 const SettingsScreen = () => {
   const { ApiRequest } = useContext(ApiContext);
-  const { selectedNotification, setNotification } = useContext(SettingsContext);
+  const {
+    selectedNotification,
+    setNotification,
+    defaultActivityComment,
+    defaultHapComment,
+    defaultHapQuantity,
+    setDefaultActivityComment,
+    setDefaultHapComment,
+    setDefaultHapQuantity,
+  } = useContext(SettingsContext);
   const [notifications, setNotifications] = useState<NoticifationsType>({} as NoticifationsType);
   const [expoPushToken, setExpoPushToken] = useState<string>("");
   const [refreshing, setRefreshing] = useState(false);
@@ -134,6 +143,36 @@ const SettingsScreen = () => {
         <Switch
           value={notifications.announcements}
           onValueChange={(e) => setNotifications({ ...notifications, announcements: e })}
+        />
+      </View>
+      <View style={styles.row}>
+        {/* @ts-ignore */}
+        <TextInput
+          style={{ flex: 1 }}
+          mode="outlined"
+          label="Default Activiteit Opmerking"
+          value={defaultActivityComment}
+          onChangeText={(text) => setDefaultActivityComment(text||'')}
+        />
+      </View>
+      <View style={styles.row}>
+        {/* @ts-ignore */}
+        <TextInput
+          style={{ flex: 1 }}
+          mode="outlined"
+          value={defaultHapComment}
+          label="Default Hap Opmerking"
+          onChangeText={(text) => setDefaultHapComment(text||"")}
+        />
+      </View>
+      <View style={styles.row}>
+        {/* @ts-ignore */}
+        <TextInput
+          style={{ flex: 1 }}
+          mode="outlined"
+          label="Default Hap Kwantiteit"
+          value={defaultHapQuantity.toString()}
+          onChangeText={(text) => setDefaultHapQuantity(parseInt(text)||0)}
         />
       </View>
       {/* <Text variant="titleLarge"> Notificatie Geluiden</Text> */}

@@ -10,6 +10,7 @@ import PhotoAlbumScreen from "../screens/PhotoAlbumScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import ChatNavigator from "./ChatNavigator";
 import { Drawer } from "./Navigators";
+import ActivitiesScreen from "../screens/ActivitiesScreen";
 
 /** the list of screens that will be reachable via the drawer( the menu you can open to the left of the screen) */
 const DrawerNavigator = () => {
@@ -24,7 +25,7 @@ const DrawerNavigator = () => {
         <DrawerContentScrollView {...props}>
           <DrawerItemList {...props} />
           <DrawerItem
-            label="My profile"
+            label="Mijn Profiel"
             onPress={() =>
               props.navigation.navigate("AuthenticatedStack", {
                 screen: "ProfilePagina",
@@ -41,6 +42,23 @@ const DrawerNavigator = () => {
         component={NewsPage}
         options={{
           title: "Nieuws",
+        }}
+      />
+      {user.roles.includes("is_member") && (
+        <Drawer.Screen
+          name="Spam/Frust"
+          component={ChatNavigator}
+          options={{
+            title: "Spam en Frusten",
+            headerShown: false,
+          }}
+        />
+      )}
+      <Drawer.Screen
+        name="Activities"
+        component={ActivitiesScreen}
+        options={{
+          title: "Activiteiten",
         }}
       />
       <Drawer.Screen
@@ -63,16 +81,6 @@ const DrawerNavigator = () => {
           ),
         }}
       />
-      {user.roles.includes("is_member") && (
-        <Drawer.Screen
-          name="Spam/Frust"
-          component={ChatNavigator}
-          options={{
-            title: "Spam en Frusten",
-            headerShown: false,
-          }}
-        />
-      )}
       <Drawer.Screen
         name="LedenlijstScreen"
         component={LedenlijstScreen}

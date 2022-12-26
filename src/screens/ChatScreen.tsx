@@ -20,13 +20,14 @@ const ChatScreen = ({ route, navigation }: Props) => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [previous, setPrevious] = useState<string | undefined>(undefined);
   const [page, setPage] = useState<string | undefined>();
-  const [ordering, setOrdering] = useState<string>("pub_date");
+  const [ordering, setOrdering] = useState<string>("-pub_date");
   const [text, setText] = useState<string>("");
+  const [sending, setSending] = useState<boolean>(false);
 
   const getChat = async () => {
     setRefreshing(true);
     const { res, data } = await ApiRequest<SpamResponse>(
-      `/${!!spam ? "spams" : ""}${!!frust ? "frusts" : ""}/${page || ordering ? "?" : ""}${page ? "page=" + page : ""}
+      `/${!!spam ? "spams" : ""}${!!frust ? "frusts" : ""}/?page_size=40&${page ? "page=" + page : ""}
       ${ordering && page ? "&" : ""}${ordering ? "order_by=" + ordering : ""}`
     );
     // console.log(data.results);
@@ -51,6 +52,7 @@ const ChatScreen = ({ route, navigation }: Props) => {
         : undefined
     );
     setRefreshing(false);
+    setSending(false);
   };
 
   useEffect(() => {
@@ -70,7 +72,7 @@ const ChatScreen = ({ route, navigation }: Props) => {
         {item?.author.photo_url !== null ? (
           <Avatar.Image source={{ uri: baseUrl.slice(0, -3) + item?.author.photo_url }} size={avatarSize} />
         ) : (
-          <Avatar.Text size={avatarSize} label={item.author.name} style={{backgroundColor: theme.colors.thetaBrown}}/>
+          <Avatar.Text size={avatarSize} label={item.author.name} style={{ backgroundColor: theme.colors.thetaBrown }} />
         )}
         <View style={styles.itemTextContentContainer}>
           <View style={styles.TopRowHeader}>
@@ -144,6 +146,7 @@ const ChatScreen = ({ route, navigation }: Props) => {
 
   const createChat = async () => {
     if (text.length > 0) {
+      setSending(true);
       const { res, data } = await ApiRequest<ChatItem>(`/${!!spam ? "spams" : ""}${!!frust ? "frusts" : ""}/`, {
         method: "POST",
         body: JSON.stringify({ text: text }),
@@ -152,6 +155,7 @@ const ChatScreen = ({ route, navigation }: Props) => {
         setText("");
         await getChat();
       }
+      setSending(false);
     }
   };
 
@@ -162,9 +166,11 @@ const ChatScreen = ({ route, navigation }: Props) => {
         placeholder={`${!!spam ? "Spam" : ""}${!!frust ? "Frust" : ""}`}
         value={text}
         onChangeText={(text) => setText(text)}
+        disabled={sending}
         right={
           <TextInput.Icon
             icon="upload-outline"
+            disabled={sending}
             size={20}
             onPress={createChat}
             // this is needed for typescript to not complain
