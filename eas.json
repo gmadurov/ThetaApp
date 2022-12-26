@@ -19,15 +19,16 @@
       "channel": "preview"
     },
     "production": {
-      "channel": "production",
+      "channel": "production"
+    }
+  },
+  "submit": {
+    "production": {
       "ios": {
         "appleId": "dev.gam.vollmer@gmail.com",
         "ascAppId": "6444844843",
         "appleTeamId": "2HA3NG8JR8"
       }
     }
-  },
-  "submit": {
-    "production": {}
   }
 }
