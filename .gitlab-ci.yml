@@ -12,6 +12,7 @@ cache:
 
 stages:
   - build
+  - submit
 
 before_script:
   - npm ci --cache .npm
@@ -22,10 +23,16 @@ eas-build-ios:
   stage: build
   script:
     - apk add --no-cache bash
-    - npx eas-cli build --platform ios --non-interactive --auto-submit
+    - npx eas-cli build --platform ios --non-interactive 
 
 eas-build-android:
   stage: build
   script:
     - apk add --no-cache bash
     - npx eas-cli build --platform android --non-interactive
+
+eas-submit-ios:
+  stage: submit
+  script: 
+    - apk add --no-cache bash
+    - npx eas-cli submit --platform ios --latest --non-interactive
