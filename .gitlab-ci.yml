@@ -11,8 +11,8 @@ cache:
     #- .yarn
 
 stages:
-  - submit
   - build
+  - submit
 
 before_script:
   - npm ci --cache .npm
@@ -33,6 +33,7 @@ eas-build-android:
 
 eas-submit-ios:
   stage: submit
+  needs: [eas-build-ios]
   script: 
     - apk add --no-cache bash
     - npx eas-cli submit --platform ios --latest --non-interactive
