@@ -18,8 +18,14 @@ before_script:
   # or with yarn:
   #- yarn install --cache-folder .yarn
 
-eas-build:
+eas-build-ios:
   stage: build
   script:
     - apk add --no-cache bash
-    - npx eas-cli build --platform all --non-interactive
+    - npx eas-cli build --platform ios --non-interactive --auto-submit
+
+eas-build-android:
+  stage: build
+  script:
+    - apk add --no-cache bash
+    - npx eas-cli build --platform android --non-interactive
