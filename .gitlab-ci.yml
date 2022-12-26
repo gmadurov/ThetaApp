@@ -12,6 +12,7 @@ cache:
 
 stages:
   - submit
+  - build
 
 before_script:
   - npm ci --cache .npm
