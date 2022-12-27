@@ -3,7 +3,7 @@
     "name": "E.S.R. Theta",
     "slug": "esr-theta",
     "owner": "gusmadvol",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./src/assets/pwa-icons/manifest-icon-512.png",
     "userInterfaceStyle": "light",
