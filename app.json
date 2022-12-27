@@ -19,8 +19,7 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.gusmadvol.esrtheta",
-      "buildNumber": "11"
+      "bundleIdentifier": "com.gusmadvol.esrtheta"
     },
     "android": {
       "adaptiveIcon": {
@@ -28,8 +27,7 @@
         "backgroundColor": "#FFFFFF"
       },
       "permissions": ["WRITE_CONTACTS", "CAMERA_ROLL"],
-      "package": "com.gusmadvol.esrtheta",
-      "versionCode": 2
+      "package": "com.gusmadvol.esrtheta"
     },
     "web": {
       "favicon": "./src/assets/favicon.png"
