@@ -37,9 +37,9 @@ function Root() {
         if (r !== null && r !== undefined && r !== "null") {
           let storedTokens = JSON.parse(r) as AuthToken;
           if ((jwt_decode(storedTokens.access_token as string) as TokenInfo).exp < Date.now()) {
-            setUser(storedTokens.user);
+            // setUser(storedTokens.user);
             setIsTryingLogin(false);
-            setAuthTokens(storedTokens);
+            // setAuthTokens(storedTokens);
             await AsyncStorage.setItem("authTokens", JSON.stringify(storedTokens));
           }
           await refreshToken(storedTokens);
