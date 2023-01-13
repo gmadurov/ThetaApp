@@ -55,7 +55,7 @@ function AuthContent({
       <View style={styles.form}>
         <View>
           <Input
-            label="Gebruikers naam"
+            label="User Name"
             onUpdateValue={(text: string) =>
               updateInputValueHandler(text, "username")
             }
@@ -72,7 +72,7 @@ function AuthContent({
           />
         )} */}
           <Input
-            label="Wachtwoord"
+            label="Password"
             onUpdateValue={(text: string) =>
               updateInputValueHandler(text, "password")
             }
