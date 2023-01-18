@@ -94,4 +94,3 @@ export default function App() {
     </PaperProvider>
   );
 }
-// rebuild just for the sake of it
