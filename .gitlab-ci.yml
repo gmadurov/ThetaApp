@@ -24,16 +24,27 @@ eas-build-ios:
   script:
     - apk add --no-cache bash
     - npx eas-cli build --platform ios --non-interactive 
+    - npx eas build:list --buildProfile=production --limit=1 --platform=android --status=finished --non-interactive | grep "Artifact" | cut -d" " -f10 | xargs curl -L -o "IOS_app.ipa" -O
   only:
     - main
+  artifacts:
+    paths:
+      - IOS_app.ipa
+    expire_in: 1 week
 
 eas-build-android:
   stage: build
   script:
     - apk add --no-cache bash
     - npx eas-cli build --platform android --non-interactive
+    - npx eas build:list --buildProfile=production --limit=1 --platform=android --status=finished --non-interactive | grep "Artifact" | cut -d" " -f10 | xargs curl -L -o "android_app.abb" -O
   only:
     - main
+  artifacts:
+    paths:
+      - android_app.aab
+    expire_in: 1 week
+
 
 eas-submit-ios:
   stage: submit
