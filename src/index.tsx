@@ -1,23 +1,23 @@
 import "react-native-gesture-handler";
 import "./polyfills";
 
+import * as Notifications from "expo-notifications";
 import * as SplashScreen from "expo-splash-screen";
 
-import * as Notifications from "expo-notifications";
-import React, { useCallback, useContext, useLayoutEffect, useState } from "react";
 import FlashMessage, { showMessage } from "react-native-flash-message";
+import React, { useCallback, useContext, useLayoutEffect, useState } from "react";
 import TokenInfo, { AuthToken } from "./models/AuthToken";
 
+import ApiContext from "./context/ApiContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import AuthContext from "./context/AuthContext";
+import { FullProvider } from "./context/FullContext";
+import { Navigation } from "./navigation/Navigation";
 import { NavigationContainer } from "@react-navigation/native";
+import { Provider as PaperProvider } from "react-native-paper";
 import { StatusBar } from "expo-status-bar";
 import jwt_decode from "jwt-decode";
-import { Provider as PaperProvider } from "react-native-paper";
-import ApiContext from "./context/ApiContext";
-import { FullProvider } from "./context/FullContext";
 import { useAppTheme } from "./context/Theme";
-import { Navigation } from "./navigation/Navigation";
-import AuthContext from "./context/AuthContext";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -94,3 +94,4 @@ export default function App() {
     </PaperProvider>
   );
 }
+// rebuild just for the sake of it
