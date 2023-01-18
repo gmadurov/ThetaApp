@@ -32,8 +32,7 @@
         "WRITE_CONTACTS",
         "CAMERA_ROLL"
       ],
-      "package": "com.gusmadvol.esrtheta",
-      "versionCode": 3
+      "package": "com.gusmadvol.esrtheta"
     },
     "web": {
       "favicon": "./src/assets/favicon.png"
